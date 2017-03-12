@@ -46,6 +46,10 @@
             this.label1 = new System.Windows.Forms.Label();
             this.dtpLateTimeEnd = new System.Windows.Forms.DateTimePicker();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.cbxCadre = new System.Windows.Forms.ComboBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.cbxCrew = new System.Windows.Forms.ComboBox();
+            this.label8 = new System.Windows.Forms.Label();
             this.tbxCarNumber = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.tbxPNumber = new System.Windows.Forms.TextBox();
@@ -56,8 +60,10 @@
             this.label4 = new System.Windows.Forms.Label();
             this.cbxDepartments = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.cbxCrew = new System.Windows.Forms.ComboBox();
-            this.label8 = new System.Windows.Forms.Label();
+            this.cbxCompany = new System.Windows.Forms.ComboBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.tbxCnic = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -66,7 +72,7 @@
             // 
             // btnGenerate
             // 
-            this.btnGenerate.Location = new System.Drawing.Point(441, 261);
+            this.btnGenerate.Location = new System.Drawing.Point(441, 316);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(113, 48);
             this.btnGenerate.TabIndex = 0;
@@ -76,8 +82,7 @@
             // 
             // dtpFromDate
             // 
-            this.dtpFromDate.CustomFormat = "dddd, MMMM, dd, yyyy, hh:mm tt";
-            this.dtpFromDate.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            this.dtpFromDate.CustomFormat = "";
             this.dtpFromDate.Location = new System.Drawing.Point(6, 17);
             this.dtpFromDate.Name = "dtpFromDate";
             this.dtpFromDate.Size = new System.Drawing.Size(253, 20);
@@ -85,15 +90,15 @@
             // 
             // saveFileDialog1
             // 
-            this.saveFileDialog1.DefaultExt = "xlsx";
-            this.saveFileDialog1.Filter = "Excel|*.xlsx";
+            this.saveFileDialog1.DefaultExt = "pdf";
+            this.saveFileDialog1.Filter = "PDF|*.pdf";
             this.saveFileDialog1.Title = "Select Path To Save Report";
             this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog1_FileOk);
             // 
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.dtpFromDate);
-            this.groupBox1.Location = new System.Drawing.Point(14, 152);
+            this.groupBox1.Location = new System.Drawing.Point(14, 207);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(267, 43);
             this.groupBox1.TabIndex = 2;
@@ -102,8 +107,7 @@
             // 
             // dtpToDate
             // 
-            this.dtpToDate.CustomFormat = "dddd, MMMM, dd, yyyy, hh:mm tt";
-            this.dtpToDate.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            this.dtpToDate.CustomFormat = "";
             this.dtpToDate.Location = new System.Drawing.Point(6, 17);
             this.dtpToDate.Name = "dtpToDate";
             this.dtpToDate.Size = new System.Drawing.Size(253, 20);
@@ -112,7 +116,7 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.dtpToDate);
-            this.groupBox2.Location = new System.Drawing.Point(287, 152);
+            this.groupBox2.Location = new System.Drawing.Point(287, 207);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(267, 43);
             this.groupBox2.TabIndex = 3;
@@ -135,7 +139,7 @@
             this.groupBox3.Controls.Add(this.label1);
             this.groupBox3.Controls.Add(this.dtpLateTimeEnd);
             this.groupBox3.Controls.Add(this.dtpLateTimeStart);
-            this.groupBox3.Location = new System.Drawing.Point(14, 204);
+            this.groupBox3.Location = new System.Drawing.Point(14, 259);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(293, 52);
             this.groupBox3.TabIndex = 4;
@@ -172,6 +176,12 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.tbxCnic);
+            this.groupBox4.Controls.Add(this.label11);
+            this.groupBox4.Controls.Add(this.cbxCompany);
+            this.groupBox4.Controls.Add(this.label10);
+            this.groupBox4.Controls.Add(this.cbxCadre);
+            this.groupBox4.Controls.Add(this.label9);
             this.groupBox4.Controls.Add(this.cbxCrew);
             this.groupBox4.Controls.Add(this.label8);
             this.groupBox4.Controls.Add(this.tbxCarNumber);
@@ -186,18 +196,55 @@
             this.groupBox4.Controls.Add(this.label3);
             this.groupBox4.Location = new System.Drawing.Point(14, 12);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(540, 134);
+            this.groupBox4.Size = new System.Drawing.Size(540, 189);
             this.groupBox4.TabIndex = 5;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Filter by";
             // 
+            // cbxCadre
+            // 
+            this.cbxCadre.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxCadre.FormattingEnabled = true;
+            this.cbxCadre.Location = new System.Drawing.Point(79, 129);
+            this.cbxCadre.Name = "cbxCadre";
+            this.cbxCadre.Size = new System.Drawing.Size(185, 21);
+            this.cbxCadre.TabIndex = 17;
+            this.cbxCadre.DropDown += new System.EventHandler(this.cbxCadre_DropDown);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(6, 132);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(35, 13);
+            this.label9.TabIndex = 16;
+            this.label9.Text = "Cadre";
+            // 
+            // cbxCrew
+            // 
+            this.cbxCrew.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxCrew.FormattingEnabled = true;
+            this.cbxCrew.Location = new System.Drawing.Point(344, 93);
+            this.cbxCrew.Name = "cbxCrew";
+            this.cbxCrew.Size = new System.Drawing.Size(188, 21);
+            this.cbxCrew.TabIndex = 15;
+            this.cbxCrew.DropDown += new System.EventHandler(this.CbxCrew_DropDown);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(276, 96);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(31, 13);
+            this.label8.TabIndex = 14;
+            this.label8.Text = "Crew";
+            // 
             // tbxCarNumber
             // 
-            this.tbxCarNumber.Location = new System.Drawing.Point(74, 93);
+            this.tbxCarNumber.Location = new System.Drawing.Point(79, 93);
             this.tbxCarNumber.Name = "tbxCarNumber";
             this.tbxCarNumber.Size = new System.Drawing.Size(185, 20);
             this.tbxCarNumber.TabIndex = 13;
-            this.tbxCarNumber.KeyPress += TextBox1_KeyPress;
             // 
             // label7
             // 
@@ -214,7 +261,6 @@
             this.tbxPNumber.Name = "tbxPNumber";
             this.tbxPNumber.Size = new System.Drawing.Size(188, 20);
             this.tbxPNumber.TabIndex = 11;
-            this.tbxPNumber.KeyPress += TextBox1_KeyPress;
             // 
             // label6
             // 
@@ -227,7 +273,7 @@
             // 
             // tbxName
             // 
-            this.tbxName.Location = new System.Drawing.Point(74, 55);
+            this.tbxName.Location = new System.Drawing.Point(79, 55);
             this.tbxName.Name = "tbxName";
             this.tbxName.Size = new System.Drawing.Size(185, 20);
             this.tbxName.TabIndex = 9;
@@ -249,7 +295,6 @@
             this.cbxSections.Name = "cbxSections";
             this.cbxSections.Size = new System.Drawing.Size(188, 21);
             this.cbxSections.TabIndex = 7;
-            this.cbxSections.DropDown += CbxSections_DropDown;
             // 
             // label4
             // 
@@ -264,11 +309,10 @@
             // 
             this.cbxDepartments.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbxDepartments.FormattingEnabled = true;
-            this.cbxDepartments.Location = new System.Drawing.Point(74, 13);
+            this.cbxDepartments.Location = new System.Drawing.Point(79, 13);
             this.cbxDepartments.Name = "cbxDepartments";
             this.cbxDepartments.Size = new System.Drawing.Size(185, 21);
             this.cbxDepartments.TabIndex = 5;
-            this.cbxDepartments.DropDown += CbxDepartments_DropDown;
             // 
             // label3
             // 
@@ -279,30 +323,46 @@
             this.label3.TabIndex = 4;
             this.label3.Text = "Department";
             // 
-            // cbxCrew
+            // cbxCompany
             // 
-            this.cbxCrew.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbxCrew.FormattingEnabled = true;
-            this.cbxCrew.Location = new System.Drawing.Point(344, 93);
-            this.cbxCrew.Name = "cbxCrew";
-            this.cbxCrew.Size = new System.Drawing.Size(188, 21);
-            this.cbxCrew.TabIndex = 15;
-            this.cbxCrew.DropDown += CbxCrew_DropDown;
+            this.cbxCompany.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxCompany.FormattingEnabled = true;
+            this.cbxCompany.Location = new System.Drawing.Point(344, 129);
+            this.cbxCompany.Name = "cbxCompany";
+            this.cbxCompany.Size = new System.Drawing.Size(188, 21);
+            this.cbxCompany.TabIndex = 19;
+            this.cbxCompany.DropDown += new System.EventHandler(this.cbxCompany_DropDown);
             // 
-            // label8
+            // label10
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(276, 96);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(31, 13);
-            this.label8.TabIndex = 14;
-            this.label8.Text = "Crew";
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(276, 132);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(51, 13);
+            this.label10.TabIndex = 18;
+            this.label10.Text = "Company";
+            // 
+            // tbxCnic
+            // 
+            this.tbxCnic.Location = new System.Drawing.Point(79, 163);
+            this.tbxCnic.Name = "tbxCnic";
+            this.tbxCnic.Size = new System.Drawing.Size(185, 20);
+            this.tbxCnic.TabIndex = 21;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(6, 166);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(72, 13);
+            this.label11.TabIndex = 20;
+            this.label11.Text = "CNIC Number";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(570, 321);
+            this.ClientSize = new System.Drawing.Size(570, 378);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
@@ -353,6 +413,12 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ComboBox cbxCrew;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ComboBox cbxCadre;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox tbxCnic;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.ComboBox cbxCompany;
+        private System.Windows.Forms.Label label10;
     }
 }
 

@@ -13,5 +13,8 @@ namespace AttendanceReport
         public string FirstName { get; set; }
         public string PNumber { get; set; }
         public string Crew { get; set; }
+        public string Cadre { get; set; }
+        public string CNICNumber { get; set; }
+        public string Company { get; set; }
     }
 }
