@@ -46,6 +46,10 @@
             this.label1 = new System.Windows.Forms.Label();
             this.dtpLateTimeEnd = new System.Windows.Forms.DateTimePicker();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.tbxCnic = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.cbxCompany = new System.Windows.Forms.ComboBox();
+            this.label10 = new System.Windows.Forms.Label();
             this.cbxCadre = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.cbxCrew = new System.Windows.Forms.ComboBox();
@@ -60,10 +64,6 @@
             this.label4 = new System.Windows.Forms.Label();
             this.cbxDepartments = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.cbxCompany = new System.Windows.Forms.ComboBox();
-            this.label10 = new System.Windows.Forms.Label();
-            this.tbxCnic = new System.Windows.Forms.TextBox();
-            this.label11 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -85,13 +85,13 @@
             this.dtpFromDate.CustomFormat = "";
             this.dtpFromDate.Location = new System.Drawing.Point(6, 17);
             this.dtpFromDate.Name = "dtpFromDate";
-            this.dtpFromDate.Size = new System.Drawing.Size(253, 20);
+            this.dtpFromDate.Size = new System.Drawing.Size(196, 20);
             this.dtpFromDate.TabIndex = 1;
             // 
             // saveFileDialog1
             // 
             this.saveFileDialog1.DefaultExt = "pdf";
-            this.saveFileDialog1.Filter = "PDF|*.pdf";
+            this.saveFileDialog1.Filter = "PDF|*.pdf|Excel|*.xlsx";
             this.saveFileDialog1.Title = "Select Path To Save Report";
             this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog1_FileOk);
             // 
@@ -100,7 +100,7 @@
             this.groupBox1.Controls.Add(this.dtpFromDate);
             this.groupBox1.Location = new System.Drawing.Point(14, 207);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(267, 43);
+            this.groupBox1.Size = new System.Drawing.Size(210, 43);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "From Date";
@@ -110,15 +110,15 @@
             this.dtpToDate.CustomFormat = "";
             this.dtpToDate.Location = new System.Drawing.Point(6, 17);
             this.dtpToDate.Name = "dtpToDate";
-            this.dtpToDate.Size = new System.Drawing.Size(253, 20);
+            this.dtpToDate.Size = new System.Drawing.Size(198, 20);
             this.dtpToDate.TabIndex = 1;
             // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.dtpToDate);
-            this.groupBox2.Location = new System.Drawing.Point(287, 207);
+            this.groupBox2.Location = new System.Drawing.Point(230, 207);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(267, 43);
+            this.groupBox2.Size = new System.Drawing.Size(211, 43);
             this.groupBox2.TabIndex = 3;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "To Date";
@@ -200,6 +200,41 @@
             this.groupBox4.TabIndex = 5;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Filter by";
+            // 
+            // tbxCnic
+            // 
+            this.tbxCnic.Location = new System.Drawing.Point(79, 163);
+            this.tbxCnic.Name = "tbxCnic";
+            this.tbxCnic.Size = new System.Drawing.Size(185, 20);
+            this.tbxCnic.TabIndex = 21;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(6, 166);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(72, 13);
+            this.label11.TabIndex = 20;
+            this.label11.Text = "CNIC Number";
+            // 
+            // cbxCompany
+            // 
+            this.cbxCompany.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxCompany.FormattingEnabled = true;
+            this.cbxCompany.Location = new System.Drawing.Point(344, 129);
+            this.cbxCompany.Name = "cbxCompany";
+            this.cbxCompany.Size = new System.Drawing.Size(188, 21);
+            this.cbxCompany.TabIndex = 19;
+            this.cbxCompany.DropDown += new System.EventHandler(this.cbxCompany_DropDown);
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(276, 132);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(51, 13);
+            this.label10.TabIndex = 18;
+            this.label10.Text = "Company";
             // 
             // cbxCadre
             // 
@@ -295,6 +330,7 @@
             this.cbxSections.Name = "cbxSections";
             this.cbxSections.Size = new System.Drawing.Size(188, 21);
             this.cbxSections.TabIndex = 7;
+            this.cbxSections.DropDown += new System.EventHandler(this.CbxSections_DropDown);
             // 
             // label4
             // 
@@ -313,6 +349,7 @@
             this.cbxDepartments.Name = "cbxDepartments";
             this.cbxDepartments.Size = new System.Drawing.Size(185, 21);
             this.cbxDepartments.TabIndex = 5;
+            this.cbxDepartments.DropDown += new System.EventHandler(this.CbxDepartments_DropDown);
             // 
             // label3
             // 
@@ -322,41 +359,6 @@
             this.label3.Size = new System.Drawing.Size(62, 13);
             this.label3.TabIndex = 4;
             this.label3.Text = "Department";
-            // 
-            // cbxCompany
-            // 
-            this.cbxCompany.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbxCompany.FormattingEnabled = true;
-            this.cbxCompany.Location = new System.Drawing.Point(344, 129);
-            this.cbxCompany.Name = "cbxCompany";
-            this.cbxCompany.Size = new System.Drawing.Size(188, 21);
-            this.cbxCompany.TabIndex = 19;
-            this.cbxCompany.DropDown += new System.EventHandler(this.cbxCompany_DropDown);
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(276, 132);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(51, 13);
-            this.label10.TabIndex = 18;
-            this.label10.Text = "Company";
-            // 
-            // tbxCnic
-            // 
-            this.tbxCnic.Location = new System.Drawing.Point(79, 163);
-            this.tbxCnic.Name = "tbxCnic";
-            this.tbxCnic.Size = new System.Drawing.Size(185, 20);
-            this.tbxCnic.TabIndex = 21;
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(6, 166);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(72, 13);
-            this.label11.TabIndex = 20;
-            this.label11.Text = "CNIC Number";
             // 
             // Form1
             // 
