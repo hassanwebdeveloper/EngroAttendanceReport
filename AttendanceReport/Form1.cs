@@ -106,8 +106,8 @@ namespace AttendanceReport
                 Cursor.Current = Cursors.WaitCursor;
                 this.mData = null;
 
-                DateTime fromDate = this.dtpFromDate.Value.Date;
-                DateTime toDate = this.dtpToDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+                DateTime fromDate = this.dtpFromDate.Value.Date.ToUniversalTime();
+                DateTime toDate = this.dtpToDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime();
 
 
 
@@ -115,66 +115,68 @@ namespace AttendanceReport
                 CCFTEvent.CCFTEvent ccftEvent = new CCFTEvent.CCFTEvent();
 
                 CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
-
-
-                List<Event> lstEvents = (from events in ccftEvent.Events
-                                      where
-                                          events != null &&
-                                          events.OccurrenceTime >= fromDate &&
-                                          events.OccurrenceTime < toDate
-                                        select events).ToList();
-
-
                 List<int> ids = new List<int>();
 
+
+
                 #region Events
-                //Dictionary<int, DateTime> lstChlEvents = new Dictionary<int, DateTime>();
 
-                //foreach (Event events in lstEvents)
-                //{
-                //    if (events == null || events.RelatedItems == null)
-                //    {
-                //        continue;
-                //    }
+                List<Event> lstEvents = (from events in ccftEvent.Events
+                                         where
+                                             events != null && events.EventType == 20001 &&
+                                             events.OccurrenceTime >= fromDate &&
+                                             events.OccurrenceTime < toDate
+                                         select events).ToList();
 
-                //    foreach (RelatedItem relatedItem in events.RelatedItems)
-                //    {
-                //        if (relatedItem != null && relatedItem.RelationCode == 0)
-                //        {
-                //            ids.Add(relatedItem.FTItemID);
-                //            if (lstChlEvents.ContainsKey(relatedItem.FTItemID))
-                //            {
-                //                DateTime occurranceTime = lstChlEvents[relatedItem.FTItemID];
 
-                //                if (occurranceTime > events.OccurrenceTime)
-                //                {
-                //                    lstChlEvents[relatedItem.FTItemID] = events.OccurrenceTime;
-                //                }
 
-                //            }
-                //            else
-                //            {
-                //                lstChlEvents.Add(relatedItem.FTItemID, events.OccurrenceTime);
-                //            }
+                Dictionary<int, DateTime> lstChlEvents = new Dictionary<int, DateTime>();
 
-                //        }
-                //    }
-                //}
+                foreach (Event events in lstEvents)
+                {
+                    if (events == null || events.RelatedItems == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (RelatedItem relatedItem in events.RelatedItems)
+                    {
+                        if (relatedItem != null && relatedItem.RelationCode == 0)
+                        {
+                            ids.Add(relatedItem.FTItemID);
+                            if (lstChlEvents.ContainsKey(relatedItem.FTItemID))
+                            {
+                                DateTime occurranceTime = lstChlEvents[relatedItem.FTItemID];
+
+                                if (occurranceTime > events.OccurrenceTime)
+                                {
+                                    lstChlEvents[relatedItem.FTItemID] = events.OccurrenceTime;
+                                }
+
+                            }
+                            else
+                            {
+                                lstChlEvents.Add(relatedItem.FTItemID, events.OccurrenceTime);
+                            }
+
+                        }
+                    }
+                }
                 #endregion
 
                 #region CHL
-                List<CardholderLocation> cardHolderLocations = (from cardHolder in ccftCentral.CardholderLocations
-                                                                where
-                                                                   cardHolder != null &&
-                                                                   cardHolder.AccessTime >= fromDate &&
-                                                                   cardHolder.AccessTime < toDate &&
-                                                                   cardHolder.AccessType == 1
-                                                                select cardHolder).ToList();
+                //List<CardholderLocation> cardHolderLocations = (from cardHolder in ccftCentral.CardholderLocations
+                //                                                where
+                //                                                   cardHolder != null &&
+                //                                                   cardHolder.AccessTime >= fromDate &&
+                //                                                   cardHolder.AccessTime < toDate &&
+                //                                                   cardHolder.AccessType == 1
+                //                                                select cardHolder).ToList();
 
 
-                ids = (from chl in cardHolderLocations
-                                 where chl != null
-                                 select chl.CardholderID).ToList();
+                //ids = (from chl in cardHolderLocations
+                //                 where chl != null
+                //                 select chl.CardholderID).ToList();
                 #endregion
 
                 List<Card> cards = (from card in ccftCentral.Cards
@@ -182,30 +184,30 @@ namespace AttendanceReport
                                     select card).Distinct().ToList();
 
                 #region CHL
-                List<Cardholder> cardHolders = (from card in cards
-                                                where card != null
-                                                select card.Cardholder).ToList();
+                //List<Cardholder> cardHolders = (from card in cards
+                //                                where card != null
+                //                                select card.Cardholder).ToList();
 
-                Dictionary<int, CardholderLocation> filteredChls =
-                                            new Dictionary<int, CardholderLocation>();
+                //Dictionary<int, CardholderLocation> filteredChls =
+                //                            new Dictionary<int, CardholderLocation>();
 
-                foreach (CardholderLocation chl in cardHolderLocations)
-                {
-                    if (filteredChls.ContainsKey(chl.CardholderID))
-                    {
-                        CardholderLocation chlExist = filteredChls[chl.CardholderID];
+                //foreach (CardholderLocation chl in cardHolderLocations)
+                //{
+                //    if (filteredChls.ContainsKey(chl.CardholderID))
+                //    {
+                //        CardholderLocation chlExist = filteredChls[chl.CardholderID];
 
-                        if (chlExist.AccessTime > chl.AccessTime)
-                        {
-                            filteredChls[chl.CardholderID] = chl;
-                        }
+                //        if (chlExist.AccessTime > chl.AccessTime)
+                //        {
+                //            filteredChls[chl.CardholderID] = chl;
+                //        }
 
-                    }
-                    else
-                    {
-                        filteredChls.Add(chl.CardholderID, chl);
-                    }
-                }
+                //    }
+                //    else
+                //    {
+                //        filteredChls.Add(chl.CardholderID, chl);
+                //    }
+                //}
                 #endregion
 
                 this.mData = new Dictionary<string, Dictionary<string, List<CardHolderInfo>>>();
@@ -220,20 +222,20 @@ namespace AttendanceReport
                 string filterByCNIC = this.tbxCnic.Text;
 
                 #region CHL
-                foreach (KeyValuePair<int, CardholderLocation> chlEvent in filteredChls)
+                //foreach (KeyValuePair<int, CardholderLocation> chlEvent in filteredChls)
                 #endregion
                 #region Events
-                //foreach (KeyValuePair<int, DateTime> chlEvent in lstChlEvents)
+                foreach (KeyValuePair<int, DateTime> chlEvent in lstChlEvents)
                 #endregion
                 {
                     if (cards.Exists(c => c.CardholderID == chlEvent.Key))
                     {
                         Card card = cards.Find(c => c.CardholderID == chlEvent.Key);
                         #region CHL
-                        CardholderLocation cardHolderLocation = chlEvent.Value;
+                        //CardholderLocation cardHolderLocation = chlEvent.Value;
                         #endregion
                         #region Events
-                        //DateTime occurranceTime = chlEvent.Value;
+                        DateTime occurranceTime = chlEvent.Value.AddHours(5);
                         #endregion
                         Cardholder cardHolder = card.Cardholder;
 
@@ -355,10 +357,10 @@ namespace AttendanceReport
                                     TimeSpan thEndTime = this.dtpLateTimeEnd.Value.TimeOfDay;
 
                                     #region CHL
-                                    if (TimeSpan.Compare(cardHolderLocation.AccessTime.TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(cardHolderLocation.AccessTime.TimeOfDay, thEndTime) <= 0)
+                                    //if (TimeSpan.Compare(cardHolderLocation.AccessTime.AddHours(5).TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(cardHolderLocation.AccessTime.AddHours(5).TimeOfDay, thEndTime) <= 0)
                                     #endregion
                                     #region Events
-                                    //if (TimeSpan.Compare(occurranceTime.TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(occurranceTime.TimeOfDay, thEndTime) <= 0)
+                                    if (TimeSpan.Compare(occurranceTime.TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(occurranceTime.TimeOfDay, thEndTime) <= 0)
                                     #endregion
                                     {
                                         CardHolderInfo chi = new CardHolderInfo()
@@ -366,10 +368,10 @@ namespace AttendanceReport
                                             CardNumber = cardHolder.LastName,
                                             FirstName = cardHolder.FirstName,
                                             #region CHL
-                                            OccurrenceTime = cardHolderLocation.AccessTime,
+                                            //OccurrenceTime = cardHolderLocation.AccessTime.AddHours(5),
                                             #endregion
                                             #region Events
-                                            //OccurrenceTime = occurranceTime,
+                                            OccurrenceTime = occurranceTime,
                                             #endregion
                                             PNumber = strPNumber,
                                             Crew = crew,
@@ -424,8 +426,17 @@ namespace AttendanceReport
             }
             catch (Exception exp)
             {
+                string exMessage = exp.Message;
+                Exception innerException = exp.InnerException;
+
+                while (innerException != null)
+                {
+                    exMessage = "\n" + innerException.Message;
+                    innerException = innerException.InnerException;
+                }
+
                 Cursor.Current = currentCursor;
-                MessageBox.Show(this, exp.Message);
+                MessageBox.Show(this, exMessage);
             }
 
         }

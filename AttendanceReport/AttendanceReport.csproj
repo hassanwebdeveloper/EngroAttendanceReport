@@ -44,6 +44,10 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="EPPlus, Version=4.1.0.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.4.1.0\lib\net40\EPPlus.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="itext.barcodes, Version=7.0.2.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
       <HintPath>..\packages\itext7.7.0.2\lib\net40\itext.barcodes.dll</HintPath>
       <Private>True</Private>
@@ -363,6 +367,26 @@
     <Compile Include="CCFTCentral\Wizard.cs" />
     <Compile Include="CCFTCentral\WizardTemplate.cs" />
     <Compile Include="CCFTCentral\Workstation.cs" />
+    <Compile Include="CCFTEvent\AlarmHistory.cs" />
+    <Compile Include="CCFTEvent\AlarmStack.cs" />
+    <Compile Include="CCFTEvent\AlarmUpdate.cs" />
+    <Compile Include="CCFTEvent\CardEvent.cs" />
+    <Compile Include="CCFTEvent\CCFTEvent.cs" />
+    <Compile Include="CCFTEvent\DVRData.cs" />
+    <Compile Include="CCFTEvent\Event.cs" />
+    <Compile Include="CCFTEvent\EventReturnToNormal.cs" />
+    <Compile Include="CCFTEvent\Image.cs" />
+    <Compile Include="CCFTEvent\Lookup.cs" />
+    <Compile Include="CCFTEvent\NotificationAlarm.cs" />
+    <Compile Include="CCFTEvent\OnlineArchiveFile.cs" />
+    <Compile Include="CCFTEvent\RelatedItem.cs" />
+    <Compile Include="CCFTEvent\SALTOLastEvent.cs" />
+    <Compile Include="CCFTEvent\Sequence.cs" />
+    <Compile Include="CCFTEvent\SingleValue.cs" />
+    <Compile Include="CCFTEvent\Trigger.cs" />
+    <Compile Include="CCFTEvent\TriggerSequenceLocation.cs" />
+    <Compile Include="CCFTEvent\TriggerSequencePair.cs" />
+    <Compile Include="CCFTEvent\UnlinkedAck.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -384,7 +408,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
