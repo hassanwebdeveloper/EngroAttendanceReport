@@ -41,7 +41,7 @@
             this.dtpToDate = new System.Windows.Forms.DateTimePicker();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.dtpLateTimeStart = new System.Windows.Forms.DateTimePicker();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.gbxLateTimeRange = new System.Windows.Forms.GroupBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.dtpLateTimeEnd = new System.Windows.Forms.DateTimePicker();
@@ -66,13 +66,13 @@
             this.label3 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
+            this.gbxLateTimeRange.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnGenerate
             // 
-            this.btnGenerate.Location = new System.Drawing.Point(441, 316);
+            this.btnGenerate.Location = new System.Drawing.Point(445, 259);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(113, 48);
             this.btnGenerate.TabIndex = 0;
@@ -116,7 +116,7 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.dtpToDate);
-            this.groupBox2.Location = new System.Drawing.Point(230, 207);
+            this.groupBox2.Location = new System.Drawing.Point(343, 207);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(211, 43);
             this.groupBox2.TabIndex = 3;
@@ -133,18 +133,18 @@
             this.dtpLateTimeStart.TabIndex = 1;
             this.dtpLateTimeStart.Value = new System.DateTime(2017, 2, 20, 8, 0, 0, 0);
             // 
-            // groupBox3
+            // gbxLateTimeRange
             // 
-            this.groupBox3.Controls.Add(this.label2);
-            this.groupBox3.Controls.Add(this.label1);
-            this.groupBox3.Controls.Add(this.dtpLateTimeEnd);
-            this.groupBox3.Controls.Add(this.dtpLateTimeStart);
-            this.groupBox3.Location = new System.Drawing.Point(14, 259);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(293, 52);
-            this.groupBox3.TabIndex = 4;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Late Time Range";
+            this.gbxLateTimeRange.Controls.Add(this.label2);
+            this.gbxLateTimeRange.Controls.Add(this.label1);
+            this.gbxLateTimeRange.Controls.Add(this.dtpLateTimeEnd);
+            this.gbxLateTimeRange.Controls.Add(this.dtpLateTimeStart);
+            this.gbxLateTimeRange.Location = new System.Drawing.Point(14, 259);
+            this.gbxLateTimeRange.Name = "gbxLateTimeRange";
+            this.gbxLateTimeRange.Size = new System.Drawing.Size(293, 52);
+            this.gbxLateTimeRange.TabIndex = 4;
+            this.gbxLateTimeRange.TabStop = false;
+            this.gbxLateTimeRange.Text = "Late Time Range";
             // 
             // label2
             // 
@@ -365,9 +365,9 @@
             this.AcceptButton = this.btnGenerate;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(570, 378);
+            this.ClientSize = new System.Drawing.Size(570, 320);
             this.Controls.Add(this.groupBox4);
-            this.Controls.Add(this.groupBox3);
+            this.Controls.Add(this.gbxLateTimeRange);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnGenerate);
@@ -378,8 +378,8 @@
             this.Text = "Engro Fertilizer";
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
+            this.gbxLateTimeRange.ResumeLayout(false);
+            this.gbxLateTimeRange.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
@@ -399,7 +399,7 @@
         private System.Windows.Forms.DateTimePicker dtpToDate;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.DateTimePicker dtpLateTimeStart;
-        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.GroupBox gbxLateTimeRange;
         private System.Windows.Forms.DateTimePicker dtpLateTimeEnd;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;

@@ -16,7 +16,29 @@ namespace AttendanceReport
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+
+            SplashScreen splash = new SplashScreen();
+
+
+            Task dbInitializerTask = new Task(() =>
+            {
+                try
+                {
+                    EFERTDbUtility.InitializeDatabases();
+                    splash.Invoke(new Action(() => { splash.Close(); }));
+
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+            });
+
+            dbInitializerTask.Start();
+
+            splash.ShowDialog();
+            Application.Run(new LoginForm());
         }
     }
 }

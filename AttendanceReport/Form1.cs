@@ -1,6 +1,5 @@
 ﻿using AttendanceReport.CCFTCentral;
 using AttendanceReport.CCFTEvent;
-using iText.IO.Font;
 using iText.Kernel.Colors;
 using iText.Kernel.Events;
 using iText.Kernel.Font;
@@ -24,22 +23,28 @@ namespace AttendanceReport
 {
     public partial class Form1 : Form
     {
-        public Dictionary<string, Dictionary<string, List<CardHolderInfo>>> mData = null;
+        public Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> mData = null;
         public Task<List<string>> mDepartmentTask = null;
         public Task<List<string>> mSectionTask = null;
         public Task<List<string>> mCrewTask = null;
         public Task<List<string>> mCadreTask = null;
         public Task<List<string>> mCompanyTask = null;
+        public bool mLateArrivalReport = true;
 
-        public Form1()
+        public Form1(bool lateArrivalReport)
         {
             InitializeComponent();
 
+            this.mLateArrivalReport = lateArrivalReport;
 
+            if (!this.mLateArrivalReport)
+            {
+                this.gbxLateTimeRange.Visible = false;
+            }
 
             this.mDepartmentTask = new Task<List<string>>(() =>
             {
-                CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
+                CCFTCentral.CCFTCentral ccftCentral = EFERTDbUtility.mCCFTCentral;
 
                 List<string> departments = (from pds in ccftCentral.PersonalDataStrings
                                             where pds != null && pds.PersonalDataFieldID == 5043 && pds.Value != null
@@ -50,7 +55,7 @@ namespace AttendanceReport
 
             this.mSectionTask = new Task<List<string>>(() =>
             {
-                CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
+                CCFTCentral.CCFTCentral ccftCentral = EFERTDbUtility.mCCFTCentral;
 
                 List<string> sections = (from pds in ccftCentral.PersonalDataStrings
                                          where pds != null && pds.PersonalDataFieldID == 12951 && pds.Value != null
@@ -61,7 +66,7 @@ namespace AttendanceReport
 
             this.mCrewTask = new Task<List<string>>(() =>
             {
-                CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
+                CCFTCentral.CCFTCentral ccftCentral = EFERTDbUtility.mCCFTCentral;
 
                 List<string> crews = (from pds in ccftCentral.PersonalDataStrings
                                       where pds != null && pds.PersonalDataFieldID == 12869 && pds.Value != null
@@ -72,7 +77,7 @@ namespace AttendanceReport
 
             this.mCadreTask = new Task<List<string>>(() =>
             {
-                CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
+                CCFTCentral.CCFTCentral ccftCentral = EFERTDbUtility.mCCFTCentral;
 
                 List<string> cadres = (from pds in ccftCentral.PersonalDataStrings
                                             where pds != null && pds.PersonalDataFieldID == 12952 && pds.Value != null
@@ -83,7 +88,7 @@ namespace AttendanceReport
 
             this.mCompanyTask = new Task<List<string>>(() =>
             {
-                CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
+                CCFTCentral.CCFTCentral ccftCentral = EFERTDbUtility.mCCFTCentral;
 
                 List<string> companyNames = (from pds in ccftCentral.PersonalDataStrings
                                        where pds != null && pds.PersonalDataFieldID == 5059 && pds.Value != null
@@ -115,9 +120,9 @@ namespace AttendanceReport
 
 
 
-                CCFTEvent.CCFTEvent ccftEvent = new CCFTEvent.CCFTEvent();
+                CCFTEvent.CCFTEvent ccftEvent = EFERTDbUtility.mCCFTEvent;
 
-                CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
+                CCFTCentral.CCFTCentral ccftCentral = EFERTDbUtility.mCCFTCentral;
                 List<int> ids = new List<int>();
 
 
@@ -125,16 +130,18 @@ namespace AttendanceReport
                 #region Events
 
                 List<CCFTEvent.Event> lstEvents = (from events in ccftEvent.Events
-                                         where
-                                             events != null && events.EventType == 20001 &&
-                                             events.OccurrenceTime >= fromDate &&
-                                             events.OccurrenceTime < toDate
-                                         select events).ToList();
+                                                   where
+                                                       events != null && events.EventType == 20001 &&
+                                                       events.OccurrenceTime >= fromDate &&
+                                                       events.OccurrenceTime < toDate
+                                                   select events).ToList();
 
 
 
-                Dictionary<int, DateTime> lstChlEvents = new Dictionary<int, DateTime>();
+                Dictionary<DateTime,Dictionary<int, DateTime>> lstChlEvents = new Dictionary<DateTime, Dictionary<int, DateTime>>();
+                Dictionary<int, DateTime> dayWiseEvents = null;
 
+                //MessageBox.Show("Events Found: " + lstEvents.Count);
                 foreach (CCFTEvent.Event events in lstEvents)
                 {
                     if (events == null || events.RelatedItems == null)
@@ -147,21 +154,33 @@ namespace AttendanceReport
                         if (relatedItem != null && relatedItem.RelationCode == 0)
                         {
                             ids.Add(relatedItem.FTItemID);
-                            if (lstChlEvents.ContainsKey(relatedItem.FTItemID))
+
+                            if (lstChlEvents.ContainsKey(events.OccurrenceTime.Date))
                             {
-                                DateTime occurranceTime = lstChlEvents[relatedItem.FTItemID];
+                                dayWiseEvents = lstChlEvents[events.OccurrenceTime.Date];
 
-                                if (occurranceTime > events.OccurrenceTime)
+                                if (dayWiseEvents.ContainsKey(relatedItem.FTItemID))
                                 {
-                                    lstChlEvents[relatedItem.FTItemID] = events.OccurrenceTime;
-                                }
+                                    DateTime occurranceTime = dayWiseEvents[relatedItem.FTItemID];
 
+                                    if (occurranceTime > events.OccurrenceTime)
+                                    {
+                                        dayWiseEvents[relatedItem.FTItemID] = events.OccurrenceTime;
+                                    }
+
+                                }
+                                else
+                                {
+                                    dayWiseEvents.Add(relatedItem.FTItemID, events.OccurrenceTime);
+                                }
                             }
                             else
                             {
-                                lstChlEvents.Add(relatedItem.FTItemID, events.OccurrenceTime);
-                            }
+                                dayWiseEvents = new Dictionary<int, DateTime>();
+                                dayWiseEvents.Add(relatedItem.FTItemID, events.OccurrenceTime);
 
+                                lstChlEvents.Add(events.OccurrenceTime.Date, dayWiseEvents);
+                            }
                         }
                     }
                 }
@@ -181,6 +200,8 @@ namespace AttendanceReport
                 //                 where chl != null
                 //                 select chl.CardholderID).ToList();
                 #endregion
+
+                //MessageBox.Show("Ids Found: " + lstEvents.Count);
 
                 List<Card> cards = (from card in ccftCentral.Cards
                                     where card != null && ids.Contains(card.CardholderID)
@@ -213,7 +234,7 @@ namespace AttendanceReport
                 //}
                 #endregion
 
-                this.mData = new Dictionary<string, Dictionary<string, List<CardHolderInfo>>>();
+                this.mData = new Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>>();
                 string filterByDepartment = this.cbxDepartments.Text;
                 string filterBySection = this.cbxSections.Text;
                 string filerByName = this.tbxName.Text;
@@ -228,191 +249,725 @@ namespace AttendanceReport
                 //foreach (KeyValuePair<int, CardholderLocation> chlEvent in filteredChls)
                 #endregion
                 #region Events
-                foreach (KeyValuePair<int, DateTime> chlEvent in lstChlEvents)
+                foreach (KeyValuePair<DateTime, Dictionary<int, DateTime>> chlDateWiseEvent in lstChlEvents)
                 #endregion
                 {
-                    if (cards.Exists(c => c.CardholderID == chlEvent.Key))
+                    foreach (KeyValuePair<int, DateTime> chlEvent in chlDateWiseEvent.Value)
                     {
-                        Card card = cards.Find(c => c.CardholderID == chlEvent.Key);
-                        #region CHL
-                        //CardholderLocation cardHolderLocation = chlEvent.Value;
-                        #endregion
-                        #region Events
-                        DateTime occurranceTime = chlEvent.Value.AddHours(5);
-                        #endregion
-                        Cardholder cardHolder = card.Cardholder;
-
-                        if (cardHolder != null && cardHolder.PersonalDataStrings != null)
+                        if (cards.Exists(c => c.CardholderID == chlEvent.Key))
                         {
-                            string department = (from pds in cardHolder.PersonalDataStrings
-                                                 where pds != null && pds.PersonalDataFieldID == 5043
-                                                 select pds.Value).FirstOrDefault();
+                            Card card = cards.Find(c => c.CardholderID == chlEvent.Key);
+                            #region CHL
+                            //CardholderLocation cardHolderLocation = chlEvent.Value;
+                            #endregion
+                            #region Events
+                            DateTime occurranceTime = chlEvent.Value.AddHours(5);
+                            #endregion
+                            Cardholder cardHolder = card.Cardholder;
 
-                            string section = (from pds in cardHolder.PersonalDataStrings
-                                              where pds != null && pds.PersonalDataFieldID == 12951
-                                              select pds.Value).FirstOrDefault();
-
-                            string crew = (from pds in cardHolder.PersonalDataStrings
-                                           where pds != null && pds.PersonalDataFieldID == 12869
-                                           select pds.Value).FirstOrDefault();
-
-                            string cadre = (from pds in cardHolder.PersonalDataStrings
-                                              where pds != null && pds.PersonalDataFieldID == 12952
-                                              select pds.Value).FirstOrDefault();
-
-                            string cnic = (from pds in cardHolder.PersonalDataStrings
-                                            where pds != null && pds.PersonalDataFieldID == 5051
-                                            select pds.Value).FirstOrDefault();
-
-                            string company = (from pds in cardHolder.PersonalDataStrings
-                                            where pds != null && pds.PersonalDataFieldID == 5059
-                                            select pds.Value).FirstOrDefault();
-
-                            
-                            if (!string.IsNullOrEmpty(department))
+                            if (cardHolder != null && cardHolder.PersonalDataStrings != null)
                             {
-                                department = department.ToUpper();
-                                filterByDepartment = filterByDepartment.ToUpper();
+                                string department = (from pds in cardHolder.PersonalDataStrings
+                                                     where pds != null && pds.PersonalDataFieldID == 5043
+                                                     select pds.Value).FirstOrDefault();
 
+                                string section = (from pds in cardHolder.PersonalDataStrings
+                                                  where pds != null && pds.PersonalDataFieldID == 12951
+                                                  select pds.Value).FirstOrDefault();
 
-                                //Filter By Department
-                                if (!string.IsNullOrEmpty(filterByDepartment) && department != filterByDepartment)
+                                string crew = (from pds in cardHolder.PersonalDataStrings
+                                               where pds != null && pds.PersonalDataFieldID == 12869
+                                               select pds.Value).FirstOrDefault();
+
+                                string cadre = (from pds in cardHolder.PersonalDataStrings
+                                                where pds != null && pds.PersonalDataFieldID == 12952
+                                                select pds.Value).FirstOrDefault();
+
+                                string cnic = (from pds in cardHolder.PersonalDataStrings
+                                               where pds != null && pds.PersonalDataFieldID == 5051
+                                               select pds.Value).FirstOrDefault();
+
+                                string company = (from pds in cardHolder.PersonalDataStrings
+                                                  where pds != null && pds.PersonalDataFieldID == 5059
+                                                  select pds.Value).FirstOrDefault();
+
+                                //if (cadre == "Work Order")
+                                //{
+                                //    MessageBox.Show("First Name: "+ cardHolder.FirstName + " cadre: "+ cadre + "Time In: " + occurranceTime.ToString());
+                                //}
+
+                                if (!string.IsNullOrEmpty(department))
                                 {
-                                    continue;
-                                }
+                                    //if (cadre == "Work Order")
+                                    //{
+                                    //    MessageBox.Show("First Name: " + cardHolder.FirstName + " cadre: " + cadre + " Department: " + department + " Time In: " + occurranceTime.ToString());
+                                    //}
 
-                                if (!string.IsNullOrEmpty(section))
-                                {
-                                    section = section.ToUpper();
-                                    filterBySection = filterBySection.ToUpper();
+                                    department = department.ToUpper();
+                                    filterByDepartment = filterByDepartment.ToUpper();
 
 
-                                    //Filter By Section
-                                    if (!string.IsNullOrEmpty(filterBySection) && section != filterBySection)
+                                    //Filter By Department
+                                    if (!string.IsNullOrEmpty(filterByDepartment) && department != filterByDepartment)
                                     {
                                         continue;
                                     }
 
-
-                                    //Filter By Name
-                                    if (!string.IsNullOrEmpty(filerByName) && !cardHolder.FirstName.Contains(filerByName))
+                                    if (!string.IsNullOrEmpty(section))
                                     {
-                                        continue;
-                                    }
+                                        //if (cadre == "Work Order")
+                                        //{
+                                        //    MessageBox.Show("First Name: " + cardHolder.FirstName + " cadre: " + cadre + " Department: " + department + " Section: " + section +  " Time In: " + occurranceTime.ToString());
+                                        //}
+                                        section = section.ToUpper();
+                                        filterBySection = filterBySection.ToUpper();
 
 
-                                    //Filter By P-Number
-                                    int? pNumber = cardHolder.PersonalDataIntegers == null || cardHolder.PersonalDataIntegers.Count == 0 ? null : cardHolder.PersonalDataIntegers.ElementAt(0).Value;
-                                    string strPNumber = pNumber == null ? "Nil" : pNumber.ToString();
-
-                                    if (!string.IsNullOrEmpty(filterByPNumber) && (pNumber == null || pNumber != Convert.ToInt32(filterByPNumber)))
-                                    {
-                                        continue;
-                                    }
-
-
-                                    //Filter By Card Number
-                                    if (!string.IsNullOrEmpty(filterByCardNumber))
-                                    {
-                                        int cardNumber;
-
-                                        bool parsed = Int32.TryParse(cardHolder.LastName, out cardNumber);
-
-                                        if (parsed)
-                                        {
-                                            if (cardNumber != Convert.ToInt32(filterByCardNumber))
-                                            {
-                                                continue;
-                                            }
-                                        }
-                                        else
+                                        //Filter By Section
+                                        if (!string.IsNullOrEmpty(filterBySection) && section != filterBySection)
                                         {
                                             continue;
                                         }
 
-                                    }
 
-                                    //Filter By Crew
-                                    if (!string.IsNullOrEmpty(filterByCrew) && crew != filterByCrew)
-                                    {
-                                        continue;
-                                    }
-                                    
-                                    //Filter By Cadre
-                                    if (!string.IsNullOrEmpty(filterByCadre) && cadre != filterByCadre)
-                                    {
-                                        continue;
-                                    }
-
-                                    //Filter By CNIC
-                                    if (!string.IsNullOrEmpty(filterByCNIC) && cnic != filterByCNIC)
-                                    {
-                                        continue;
-                                    }
-                                    
-                                    //Filter By Company
-                                    if (!string.IsNullOrEmpty(filterByCompany) && company != filterByCompany)
-                                    {
-                                        continue;
-                                    }
-
-                                    TimeSpan thStartTime = this.dtpLateTimeStart.Value.TimeOfDay;
-                                    TimeSpan thEndTime = this.dtpLateTimeEnd.Value.TimeOfDay;
-
-                                    #region CHL
-                                    //if (TimeSpan.Compare(cardHolderLocation.AccessTime.AddHours(5).TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(cardHolderLocation.AccessTime.AddHours(5).TimeOfDay, thEndTime) <= 0)
-                                    #endregion
-                                    #region Events
-                                    if (TimeSpan.Compare(occurranceTime.TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(occurranceTime.TimeOfDay, thEndTime) <= 0)
-                                    #endregion
-                                    {
-                                        CardHolderInfo chi = new CardHolderInfo()
+                                        //Filter By Name
+                                        if (!string.IsNullOrEmpty(filerByName) && !cardHolder.FirstName.Contains(filerByName))
                                         {
-                                            CardNumber = cardHolder.LastName,
-                                            FirstName = cardHolder.FirstName,
-                                            #region CHL
-                                            //OccurrenceTime = cardHolderLocation.AccessTime.AddHours(5),
-                                            #endregion
-                                            #region Events
-                                            OccurrenceTime = occurranceTime,
-                                            #endregion
-                                            PNumber = strPNumber,
-                                            Crew = crew,
-                                            Cadre = cadre,
-                                            Company = company,
-                                            CNICNumber = cnic
-                                        };
+                                            continue;
+                                        }
 
-                                        if (this.mData.ContainsKey(department))
+
+                                        //Filter By P-Number
+                                        int? pNumber = cardHolder.PersonalDataIntegers == null || cardHolder.PersonalDataIntegers.Count == 0 ? null : cardHolder.PersonalDataIntegers.ElementAt(0).Value;
+                                        string strPNumber = pNumber == null ? "Nil" : pNumber.ToString();
+
+                                        if (!string.IsNullOrEmpty(filterByPNumber) && (pNumber == null || pNumber != Convert.ToInt32(filterByPNumber)))
                                         {
-                                            if (this.mData[department].ContainsKey(section))
+                                            continue;
+                                        }
+
+                                        //if (cadre == "Work Order")
+                                        //{
+                                        //    MessageBox.Show("First Name: " + cardHolder.FirstName + " cadre: " + cadre + " P-Number: " + strPNumber +  " Time In: " + occurranceTime.ToString());
+                                        //}
+
+                                        //Filter By Card Number
+                                        if (!string.IsNullOrEmpty(filterByCardNumber))
+                                        {
+                                            int cardNumber;
+
+                                            bool parsed = Int32.TryParse(cardHolder.LastName, out cardNumber);
+
+                                            if (parsed)
                                             {
-                                                List<CardHolderInfo> lstchi = this.mData[department][section];
-                                                lstchi.Add(chi);
-                                                this.mData[department][section] = lstchi;
+                                                if (cardNumber != Convert.ToInt32(filterByCardNumber))
+                                                {
+                                                    continue;
+                                                }
                                             }
                                             else
                                             {
-                                                List<CardHolderInfo> lstchi = new List<CardHolderInfo>();
-                                                lstchi.Add(chi);
-                                                this.mData[department].Add(section, lstchi);
+                                                continue;
                                             }
-                                        }
-                                        else
-                                        {
-                                            List<CardHolderInfo> lstchi = new List<CardHolderInfo>();
-                                            lstchi.Add(chi);
-                                            Dictionary<string, List<CardHolderInfo>> dict = new Dictionary<string, List<CardHolderInfo>>();
-                                            dict.Add(section, lstchi);
-                                            this.mData.Add(department, dict);
+
                                         }
 
+                                        //Filter By Crew
+                                        if (!string.IsNullOrEmpty(filterByCrew) && crew != filterByCrew)
+                                        {
+                                            continue;
+                                        }
+
+                                        //Filter By Cadre
+                                        if (!string.IsNullOrEmpty(filterByCadre) && cadre != filterByCadre)
+                                        {
+                                            continue;
+                                        }
+
+                                        //Filter By CNIC
+                                        if (!string.IsNullOrEmpty(filterByCNIC) && cnic != filterByCNIC)
+                                        {
+                                            continue;
+                                        }
+
+                                        //Filter By Company
+                                        if (!string.IsNullOrEmpty(filterByCompany) && company != filterByCompany)
+                                        {
+                                            continue;
+                                        }
+
+                                        TimeSpan thStartTime = DateTime.MinValue.TimeOfDay;
+                                        TimeSpan thEndTime = DateTime.MaxValue.TimeOfDay;
+
+                                        if (this.mLateArrivalReport)
+                                        {
+                                            thStartTime = this.dtpLateTimeStart.Value.TimeOfDay;
+                                            thEndTime = this.dtpLateTimeEnd.Value.TimeOfDay;
+                                        }
+
+
+
+                                        #region CHL
+                                        //if (TimeSpan.Compare(cardHolderLocation.AccessTime.AddHours(5).TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(cardHolderLocation.AccessTime.AddHours(5).TimeOfDay, thEndTime) <= 0)
+                                        #endregion
+                                        #region Events
+                                        if (TimeSpan.Compare(occurranceTime.TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(occurranceTime.TimeOfDay, thEndTime) <= 0)
+                                        #endregion
+                                        {
+                                            CardHolderReportInfo chi = new CardHolderReportInfo()
+                                            {
+                                                CardNumber = cardHolder.LastName,
+                                                FirstName = cardHolder.FirstName,
+                                                #region CHL
+                                                //OccurrenceTime = cardHolderLocation.AccessTime.AddHours(5),
+                                                #endregion
+                                                #region Events
+                                                OccurrenceTime = occurranceTime,
+                                                #endregion
+                                                PNumber = strPNumber,
+                                                Crew = crew,
+                                                Cadre = cadre,
+                                                Company = company,
+                                                CNICNumber = cnic
+                                            };
+
+
+                                            if (this.mData.ContainsKey(department))
+                                            {
+                                                if (this.mData[department].ContainsKey(section))
+                                                {
+                                                    if (this.mData[department][section].ContainsKey(cadre))
+                                                    {
+                                                        List<CardHolderReportInfo> lstchi = this.mData[department][section][cadre];
+                                                        lstchi.Add(chi);
+                                                        this.mData[department][section][cadre] = lstchi;
+                                                    }
+                                                    else
+                                                    {
+                                                        List<CardHolderReportInfo> lstchi = new List<CardHolderReportInfo>();
+                                                        lstchi.Add(chi);
+                                                        this.mData[department][section].Add(cadre, lstchi);
+                                                    }
+                                                    
+                                                }
+                                                else
+                                                {
+                                                    List<CardHolderReportInfo> lstchi = new List<CardHolderReportInfo>();
+                                                    lstchi.Add(chi);
+                                                    Dictionary<string, List<CardHolderReportInfo>> dictCadres = new Dictionary<string, List<CardHolderReportInfo>>();
+                                                    dictCadres.Add(cadre, lstchi);
+                                                    this.mData[department].Add(section, dictCadres);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                List<CardHolderReportInfo> lstchi = new List<CardHolderReportInfo>();
+                                                lstchi.Add(chi);
+                                                Dictionary<string, List<CardHolderReportInfo>> dictCadres = new Dictionary<string, List<CardHolderReportInfo>>();
+                                                dictCadres.Add(cadre, lstchi);
+                                                Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>> dictSections = new Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>();
+                                                dictSections.Add(section, dictCadres);
+                                                this.mData.Add(department, dictSections);
+                                            }
+
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
+                    }                    
                 }
+
+                #region static data
+
+                //Dictionary<string, Dictionary<string, List<CardHolderInfo>>> data = new Dictionary<string, Dictionary<string, List<CardHolderInfo>>>();
+                //Dictionary<string, List<CardHolderInfo>> sections = new Dictionary<string, List<CardHolderInfo>>();
+
+                //  string dep = "Admin";
+
+                //string section = "Accounts";
+
+                //List<CardHolderInfo> cards = new List<CardHolderInfo>();
+
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "12345",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Qamar",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "1234"                                        
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "54321",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "B",
+                //    FirstName = "Abdullah",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "4321"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "Contractor",
+                //    CardNumber = "12455",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "C",
+                //    FirstName = "Zeeshan",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "3214"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "53246",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "D",
+                //    FirstName = "Fayyaz",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "6524"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "32014",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Ikram",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "3264"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "98765",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Faisal",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "9876"
+                //});
+
+                //sections.Add(section, cards);
+
+                //section = "Security";
+
+                //cards = new List<CardHolderInfo>();
+
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "12345",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Mustafa",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "1234"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "54321",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "B",
+                //    FirstName = "Omer",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "4321"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "Contractor",
+                //    CardNumber = "12455",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "C",
+                //    FirstName = "Zeeshan",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "3214"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "98765",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Kamran",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "9876"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "53246",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "D",
+                //    FirstName = "Shiraz",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "6524"
+                //});
+
+                //sections.Add(section, cards);
+
+                //section = "HR";
+
+                //cards = new List<CardHolderInfo>();
+
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "12345",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Saeed",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "1234"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "54321",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "B",
+                //    FirstName = "Hassan",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "4321"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "Contractor",
+                //    CardNumber = "12455",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "C",
+                //    FirstName = "Ubaid",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "3214"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "98765",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Haris",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "9876"
+                //});
+
+
+                //sections.Add(section, cards);
+
+                //data.Add(dep, sections);
+
+                //dep = "Quality Assurance";
+
+                //section = "Testers";
+
+                //cards = new List<CardHolderInfo>();
+
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "12345",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Qamar",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "1234"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "54321",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "B",
+                //    FirstName = "Abdullah",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "4321"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "Contractor",
+                //    CardNumber = "12455",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "C",
+                //    FirstName = "Zeeshan",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "3214"
+                //});
+
+
+                //sections.Add(section, cards);
+
+                //section = "Automation";
+
+                //cards = new List<CardHolderInfo>();
+
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "12345",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Mustafa",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "1234"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "54321",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "B",
+                //    FirstName = "Omer",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "4321"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "Contractor",
+                //    CardNumber = "12455",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "C",
+                //    FirstName = "Zeeshan",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "3214"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "98765",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Kamran",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "9876"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "53246",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "D",
+                //    FirstName = "Shiraz",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "6524"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "32014",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Ali",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "3264"
+                //});
+
+
+                //sections.Add(section, cards);
+
+                //section = "OutSource Testers";
+
+                //cards = new List<CardHolderInfo>();
+
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "12345",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Saeed",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "1234"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "54321",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "B",
+                //    FirstName = "Hassan",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "4321"
+                //});                
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "53246",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "D",
+                //    FirstName = "Abid",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "6524"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "32014",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Mehtab",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "3264"
+                //});
+
+
+                //sections.Add(section, cards);
+
+                //data.Add(dep, sections);
+
+                //dep = "Business Analyst";
+
+                //section = "Requirement Gathering";
+
+                //cards = new List<CardHolderInfo>();
+
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "12345",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Qamar",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "1234"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "54321",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "B",
+                //    FirstName = "Abdullah",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "4321"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "Contractor",
+                //    CardNumber = "12455",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "C",
+                //    FirstName = "Zeeshan",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "3214"
+                //});
+
+
+                //sections.Add(section, cards);
+
+                //section = "Client Dealing";
+
+                //cards = new List<CardHolderInfo>();
+
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "12345",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Mustafa",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "1234"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "54321",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "B",
+                //    FirstName = "Omer",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "4321"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "Contractor",
+                //    CardNumber = "12455",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "C",
+                //    FirstName = "Zeeshan",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "3214"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "nmpt",
+                //    CardNumber = "98765",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Kamran",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "9876"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "53246",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "D",
+                //    FirstName = "Shiraz",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "6524"
+                //});
+                //cards.Add(new CardHolderInfo()
+                //{
+                //    Cadre = "mpt",
+                //    CardNumber = "32014",
+                //    CNICNumber = "12345-1234567-1",
+                //    Company = "Gallagher",
+                //    Crew = "A",
+                //    FirstName = "Ali",
+                //    OccurrenceTime = DateTime.Now,
+                //    PNumber = "3264"
+                //});
+
+
+                //sections.Add(section, cards);
+
+
+                //data.Add(dep, sections);
+
+                //this.mData = data;
+
+                #endregion
 
                 if (this.mData != null && this.mData.Count > 0)
                 {
@@ -451,22 +1006,22 @@ namespace AttendanceReport
 
             if (extension == ".pdf")
             {
-                this.SaveAsPdf();
+                this.SaveAsPdf(this.mData, this.mLateArrivalReport ? "Late Arrival Report" : "Activity Report");
             }
             else if (extension == ".xlsx")
             {
-                this.SaveAsExcel();
+                this.SaveAsExcel(this.mData, this.mLateArrivalReport ? "Late Arrival Report" : "Activity Report", this.mLateArrivalReport ? "Late Arrival Report" : "Activity Report");
             }
         }
 
-        private void SaveAsPdf()
+        private void SaveAsPdf(Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> data, string heading)
         {
             Cursor currentCursor = Cursor.Current;
 
             try
             {
                 Cursor.Current = Cursors.WaitCursor;
-                if (this.mData != null)
+                if (data != null)
                 {
                     using (PdfWriter pdfWriter = new PdfWriter(this.saveFileDialog1.FileName))
                     {
@@ -489,14 +1044,14 @@ namespace AttendanceReport
 
                                 //Table table = new Table((new List<float>() { 8F, 100F, 150F, 225F, 60F, 40F, 100F, 125F, 150F }).ToArray());
 
-                                this.AddMainHeading(table);
+                                this.AddMainHeading(table, heading);
 
                                 //this.AddNewEmptyRow(table);
                                 //this.AddNewEmptyRow(table);
 
                                 //Sections and Data
 
-                                foreach (KeyValuePair<string, Dictionary<string, List<CardHolderInfo>>> department in this.mData)
+                                foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> department in data)
                                 {
                                     if (department.Value == null)
                                     {
@@ -506,26 +1061,44 @@ namespace AttendanceReport
                                     //Department
                                     this.AddDepartmentRow(table, department.Key);
 
-
-                                    foreach (KeyValuePair<string, List<CardHolderInfo>> section in department.Value)
+                                    foreach (KeyValuePair<string, Dictionary<string, List<CardHolderReportInfo>>> section in department.Value)
                                     {
+                                        if (section.Value == null)
+                                        {
+                                            continue;
+                                        }
+
                                         //Section
                                         this.AddSectionRow(table, section.Key);
 
-                                        //Data
-                                        //this.AddNewEmptyRow(table, false);
 
-                                        this.AddTableHeaderRow(table);
-
-                                        for (int i = 0; i < section.Value.Count; i++)
+                                        foreach (KeyValuePair<string, List<CardHolderReportInfo>> cadre in section.Value)
                                         {
-                                            CardHolderInfo chl = section.Value[i];
-                                            this.AddTableDataRow(table, chl, i % 2 == 0);
-                                        }
+                                            if (cadre.Value == null)
+                                            {
+                                                continue;
+                                            }
 
-                                        this.AddNewEmptyRow(table);
+                                            //Cadre
+                                            this.AddCadreRow(table, cadre.Key);
+
+                                            //Data
+                                            //this.AddNewEmptyRow(table, false);
+
+                                            this.AddTableHeaderRow(table);
+
+                                            for (int i = 0; i < cadre.Value.Count; i++)
+                                            {
+                                                CardHolderReportInfo chl = cadre.Value[i];
+                                                this.AddTableDataRow(table, chl, i % 2 == 0);
+                                            }
+
+                                            this.AddNewEmptyRow(table);
+                                        }
                                     }
                                 }
+
+                                
 
                                 doc.Add(table);
 
@@ -558,20 +1131,20 @@ namespace AttendanceReport
             }
         }
 
-        private void SaveAsExcel()
+        private void SaveAsExcel(Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> data, string sheetName, string heading)
         {
             Cursor currentCursor = Cursor.Current;
             try
             {
                 Cursor.Current = Cursors.WaitCursor;
-                if (this.mData != null)
+                if (data != null)
                 {
 
 
 
                     using (ExcelPackage ex = new ExcelPackage())
                     {
-                        ExcelWorksheet work = ex.Workbook.Worksheets.Add("Attendence Report");
+                        ExcelWorksheet work = ex.Workbook.Worksheets.Add(sheetName);
                         
                         work.View.ShowGridLines = false;
                         work.Cells.Style.Font.Name = "Segoe UI Light";
@@ -596,13 +1169,13 @@ namespace AttendanceReport
                         //work.Cells["A1:B2"].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                         //work.Cells["A1:B2"].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                         //work.Cells["A1:B2"].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                        work.Cells["A1:B2"].Value = "Late Arrival Report";
+                        work.Cells["A1:B2"].Value = heading;
 
                         // img variable actually is your image path
                         System.Drawing.Image myImage = System.Drawing.Image.FromFile("Images/logo.png");
 
                         var pic = work.Drawings.AddPicture("Logo", myImage);
-                        
+
                         pic.SetPosition(5, 600);
 
                         int row = 4;
@@ -646,7 +1219,7 @@ namespace AttendanceReport
                         row++;
                         //Sections and Data
 
-                        foreach (KeyValuePair<string, Dictionary<string, List<CardHolderInfo>>> department in this.mData)
+                        foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> department in data)
                         {
                             if (department.Value == null)
                             {
@@ -665,8 +1238,13 @@ namespace AttendanceReport
 
                             row++;
 
-                            foreach (KeyValuePair<string, List<CardHolderInfo>> section in department.Value)
+                            foreach (KeyValuePair<string, Dictionary<string, List<CardHolderReportInfo>>> section in department.Value)
                             {
+                                if (section.Value == null)
+                                {
+                                    continue;
+                                }
+
                                 //Section
                                 work.Cells[row, 1].Style.Font.Bold = true;
                                 work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
@@ -679,30 +1257,27 @@ namespace AttendanceReport
                                 //Data
                                 row++;
 
-                                work.Cells[row, 1, row, 4].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                work.Cells[row, 1, row, 4].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                work.Cells[row, 1, row, 4].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                work.Cells[row, 1, row, 4].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-
-                                work.Cells[row, 1, row, 4].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                work.Cells[row, 1, row, 4].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                work.Cells[row, 1, row, 4].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                work.Cells[row, 1, row, 4].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-
-                                work.Cells[row, 1, row, 4].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                work.Cells[row, 1, row, 4].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(253, 233, 217));
-                                work.Cells[row, 1, row, 4].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
-                                work.Cells[row, 1, row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-
-                                work.Cells[row, 1].Value = "Card Number";
-                                work.Cells[row, 2].Value = "Occurrance Time";
-                                work.Cells[row, 3].Value = "P-Number";
-                                work.Cells[row, 4].Value = "First Name";
-                                work.Row(row).Height = 20;
-
-                                for (int i = 0; i < section.Value.Count; i++)
+                                foreach (KeyValuePair<string, List<CardHolderReportInfo>> cadre in section.Value)
                                 {
+
+                                    if (cadre.Value == null)
+                                    {
+                                        continue;
+                                    }
+
+                                    //Section
+                                    work.Cells[row, 1].Style.Font.Bold = true;
+                                    work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                    work.Cells[row, 1, row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                    work.Cells[row, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                    work.Cells[row, 1].Value = "Cadre:";
+                                    work.Cells[row, 2].Value = cadre.Key;
+                                    work.Row(row).Height = 20;
+
+                                    //Data
                                     row++;
+
+
                                     work.Cells[row, 1, row, 4].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                                     work.Cells[row, 1, row, 4].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                                     work.Cells[row, 1, row, 4].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
@@ -713,33 +1288,57 @@ namespace AttendanceReport
                                     work.Cells[row, 1, row, 4].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                                     work.Cells[row, 1, row, 4].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
 
-                                    if (i % 2 == 0)
+                                    work.Cells[row, 1, row, 4].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                    work.Cells[row, 1, row, 4].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(253, 233, 217));
+                                    work.Cells[row, 1, row, 4].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                    work.Cells[row, 1, row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                                    work.Cells[row, 1].Value = "Card Number";
+                                    work.Cells[row, 2].Value = "Occurrance Time";
+                                    work.Cells[row, 3].Value = "P-Number";
+                                    work.Cells[row, 4].Value = "First Name";
+                                    work.Row(row).Height = 20;
+
+                                    for (int i = 0; i < cadre.Value.Count; i++)
                                     {
-                                        work.Cells[row, 1, row, 4].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                        work.Cells[row, 1, row, 4].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                                        row++;
+                                        work.Cells[row, 1, row, 4].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                        work.Cells[row, 1, row, 4].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                        work.Cells[row, 1, row, 4].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                        work.Cells[row, 1, row, 4].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                                        work.Cells[row, 1, row, 4].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                        work.Cells[row, 1, row, 4].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                        work.Cells[row, 1, row, 4].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                        work.Cells[row, 1, row, 4].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+
+                                        if (i % 2 == 0)
+                                        {
+                                            work.Cells[row, 1, row, 4].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                            work.Cells[row, 1, row, 4].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                                        }
+
+                                        work.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+                                        work.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                        work.Cells[row, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+
+                                        CardHolderReportInfo chl = cadre.Value[i];
+                                        work.Cells[row, 1].Value = chl.CardNumber;
+                                        work.Cells[row, 2].Value = chl.OccurrenceTime.ToString();
+                                        work.Cells[row, 3].Value = chl.PNumber;
+                                        work.Cells[row, 4].Value = chl.FirstName;
+
+                                        work.Row(row).Height = 20;
                                     }
 
-                                    work.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
-                                    work.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                                    work.Cells[row, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
-
-                                    CardHolderInfo chl = section.Value[i];
-                                    work.Cells[row, 1].Value = chl.CardNumber;
-                                    work.Cells[row, 2].Value = chl.OccurrenceTime.ToString();
-                                    work.Cells[row, 3].Value = chl.PNumber;
-                                    work.Cells[row, 4].Value = chl.FirstName;
-                                    
-                                    work.Row(row).Height = 20;
+                                    row++;
+                                    row++;
                                 }
 
-                                row++;
-                                row++;
+
                             }
 
-
                         }
-
-
 
                         ex.SaveAs(new System.IO.FileInfo(this.saveFileDialog1.FileName));
 
@@ -771,12 +1370,12 @@ namespace AttendanceReport
 
         }
 
-        private void AddMainHeading(Table table)
+        private void AddMainHeading(Table table, string heading)
         {
             Cell headingCell = new Cell(2, 4);
             headingCell.SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER);
             headingCell.SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3));
-            headingCell.Add(new Paragraph("Late Arrival Report").SetFontSize(22F).SetBackgroundColor(new DeviceRgb(252, 213, 180))
+            headingCell.Add(new Paragraph(heading).SetFontSize(22F).SetBackgroundColor(new DeviceRgb(252, 213, 180))
                // .SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 3))
                 );
             iText.Layout.Element.Image img = new iText.Layout.Element.Image(iText.IO.Image.ImageDataFactory.Create("Images/logo.png"));
@@ -930,6 +1529,45 @@ namespace AttendanceReport
             //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
         }
 
+        private void AddCadreRow(Table table, string cadreName)
+        {
+            table.StartNewRow();
+
+            table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().
+                    Add(new Paragraph("Cadre:").
+                    SetFontSize(11F).
+                    SetBold().
+                    SetFontColor(new DeviceRgb(247, 150, 70))).
+                SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
+                SetHeight(22F).
+                SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().
+                    Add(new Paragraph(cadreName).
+                    SetFontSize(11F)).
+                SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
+                SetHeight(22F).
+                SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+        }
+
         private void AddTableHeaderRow(Table table)
         {
             table.StartNewRow();
@@ -996,7 +1634,7 @@ namespace AttendanceReport
             //    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
         }
 
-        private void AddTableDataRow(Table table, CardHolderInfo chl, bool altRow)
+        private void AddTableDataRow(Table table, CardHolderReportInfo chl, bool altRow)
         {
             if (chl == null)
             {
@@ -1069,12 +1707,12 @@ namespace AttendanceReport
             //    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
         }
 
+
         private void TextBox1_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
         {
             if (!(Char.IsDigit(e.KeyChar) || (e.KeyChar == (char)Keys.Back)))
                 e.Handled = true;
         }
-
 
         private void CbxCrew_DropDown(object sender, System.EventArgs e)
         {
@@ -1089,7 +1727,7 @@ namespace AttendanceReport
 
                     if (this.mCrewTask == null)
                     {
-                        CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
+                        CCFTCentral.CCFTCentral ccftCentral = EFERTDbUtility.mCCFTCentral;
 
                         crews = (from pds in ccftCentral.PersonalDataStrings
                                  where pds != null && pds.PersonalDataFieldID == 12869 && pds.Value != null
@@ -1123,7 +1761,7 @@ namespace AttendanceReport
 
                     if (this.mSectionTask == null)
                     {
-                        CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
+                        CCFTCentral.CCFTCentral ccftCentral = EFERTDbUtility.mCCFTCentral;
 
                         sections = (from pds in ccftCentral.PersonalDataStrings
                                     where pds != null && pds.PersonalDataFieldID == 12951 && pds.Value != null
@@ -1157,7 +1795,7 @@ namespace AttendanceReport
 
                     if (this.mDepartmentTask == null)
                     {
-                        CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
+                        CCFTCentral.CCFTCentral ccftCentral = EFERTDbUtility.mCCFTCentral;
 
                         departments = (from pds in ccftCentral.PersonalDataStrings
                                        where pds != null && pds.PersonalDataFieldID == 5043 && pds.Value != null
@@ -1191,7 +1829,7 @@ namespace AttendanceReport
 
                     if (this.mCadreTask == null)
                     {
-                        CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
+                        CCFTCentral.CCFTCentral ccftCentral = EFERTDbUtility.mCCFTCentral;
 
                         cadres = (from pds in ccftCentral.PersonalDataStrings
                                        where pds != null && pds.PersonalDataFieldID == 12952 && pds.Value != null
@@ -1225,7 +1863,7 @@ namespace AttendanceReport
 
                     if (this.mCompanyTask == null)
                     {
-                        CCFTCentral.CCFTCentral ccftCentral = new CCFTCentral.CCFTCentral();
+                        CCFTCentral.CCFTCentral ccftCentral = EFERTDbUtility.mCCFTCentral;
 
                         companyNames = (from pds in ccftCentral.PersonalDataStrings
                                   where pds != null && pds.PersonalDataFieldID == 5059 && pds.Value != null

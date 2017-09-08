@@ -96,7 +96,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CardHolderInfo.cs" />
+    <Compile Include="AlarmedListReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AlarmedListReportForm.Designer.cs">
+      <DependentUpon>AlarmedListReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BannedEntryReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BannedEntryReportForm.Designer.cs">
+      <DependentUpon>BannedEntryReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CardHolderReportInfo.cs" />
+    <Compile Include="CategoryWiseReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CategoryWiseReportForm.Designer.cs">
+      <DependentUpon>CategoryWiseReportForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="CCFTCentral\AccessDecisionTileConfig.cs" />
     <Compile Include="CCFTCentral\AccessTriplet.cs" />
     <Compile Include="CCFTCentral\AccessZone.cs" />
@@ -387,16 +405,83 @@
     <Compile Include="CCFTEvent\TriggerSequenceLocation.cs" />
     <Compile Include="CCFTEvent\TriggerSequencePair.cs" />
     <Compile Include="CCFTEvent\UnlinkedAck.cs" />
+    <Compile Include="ContractorWiseReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ContractorWiseReportForm.Designer.cs">
+      <DependentUpon>ContractorWiseReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EFERTDb\AlertInfo.cs" />
+    <Compile Include="EFERTDb\AppUser.cs" />
+    <Compile Include="EFERTDb\BlockedPersonInfo.cs" />
+    <Compile Include="EFERTDb\CadreInfo.cs" />
+    <Compile Include="EFERTDb\CardHolderInfo.cs" />
+    <Compile Include="EFERTDb\CheckInAndOutInfo.cs" />
+    <Compile Include="EFERTDb\CompanyInfo.cs" />
+    <Compile Include="EFERTDb\CrewInfo.cs" />
+    <Compile Include="EFERTDb\DailyCardHolder.cs" />
+    <Compile Include="EFERTDb\DepartmentInfo.cs" />
+    <Compile Include="EFERTDb\DesignationInfo.cs" />
+    <Compile Include="EFERTDb\EditableFields.cs" />
+    <Compile Include="EFERTDb\EFERTDbContext.cs" />
+    <Compile Include="EFERTDb\EFERTDbUtility.cs" />
+    <Compile Include="EFERTDb\EFERTInitializer.cs" />
+    <Compile Include="EFERTDb\EmailAddress.cs" />
+    <Compile Include="EFERTDb\SectionInfo.cs" />
+    <Compile Include="EFERTDb\SystemSetting.cs" />
+    <Compile Include="EFERTDb\VisitorCardHolder.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="LMSAttendanceReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LMSAttendanceReportForm.Designer.cs">
+      <DependentUpon>LMSAttendanceReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LoginForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LoginForm.Designer.cs">
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReportSelectorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ReportSelectorForm.Designer.cs">
+      <DependentUpon>ReportSelectorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SplashScreen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SplashScreen.Designer.cs">
+      <DependentUpon>SplashScreen.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="AlarmedListReportForm.resx">
+      <DependentUpon>AlarmedListReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BannedEntryReportForm.resx">
+      <DependentUpon>BannedEntryReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CategoryWiseReportForm.resx">
+      <DependentUpon>CategoryWiseReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ContractorWiseReportForm.resx">
+      <DependentUpon>ContractorWiseReportForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LMSAttendanceReportForm.resx">
+      <DependentUpon>LMSAttendanceReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LoginForm.resx">
+      <DependentUpon>LoginForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -408,6 +493,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="ReportSelectorForm.resx">
+      <DependentUpon>ReportSelectorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SplashScreen.resx">
+      <DependentUpon>SplashScreen.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Fonts\SEGOEUIL.TTF">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
