@@ -346,7 +346,6 @@ namespace AttendanceReport
                         }
 
                         smtp.Send(msg);
-                        MessageBox.Show("Email Sent.");
                     }                    
                 }
             }
