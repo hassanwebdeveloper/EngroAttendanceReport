@@ -41,6 +41,8 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.dtpFromDate = new System.Windows.Forms.DateTimePicker();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.cbxCompany = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.groupBox4.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -58,6 +60,8 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.cbxCompany);
+            this.groupBox4.Controls.Add(this.label1);
             this.groupBox4.Controls.Add(this.tbxCnic);
             this.groupBox4.Controls.Add(this.label11);
             this.groupBox4.Controls.Add(this.cbxCategory);
@@ -73,7 +77,7 @@
             // 
             // tbxCnic
             // 
-            this.tbxCnic.Location = new System.Drawing.Point(79, 113);
+            this.tbxCnic.Location = new System.Drawing.Point(79, 99);
             this.tbxCnic.Name = "tbxCnic";
             this.tbxCnic.Size = new System.Drawing.Size(188, 20);
             this.tbxCnic.TabIndex = 21;
@@ -81,7 +85,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(6, 116);
+            this.label11.Location = new System.Drawing.Point(6, 102);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(72, 13);
             this.label11.TabIndex = 20;
@@ -105,7 +109,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(6, 23);
+            this.label10.Location = new System.Drawing.Point(6, 22);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(49, 13);
             this.label10.TabIndex = 18;
@@ -113,7 +117,7 @@
             // 
             // tbxName
             // 
-            this.tbxName.Location = new System.Drawing.Point(79, 66);
+            this.tbxName.Location = new System.Drawing.Point(79, 73);
             this.tbxName.Name = "tbxName";
             this.tbxName.Size = new System.Drawing.Size(188, 20);
             this.tbxName.TabIndex = 9;
@@ -121,7 +125,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 69);
+            this.label5.Location = new System.Drawing.Point(6, 76);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(35, 13);
             this.label5.TabIndex = 8;
@@ -170,6 +174,24 @@
             this.saveFileDialog1.Title = "Select Path To Save Report";
             this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog1_FileOk);
             // 
+            // cbxCompany
+            // 
+            this.cbxCompany.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxCompany.FormattingEnabled = true;
+            this.cbxCompany.Location = new System.Drawing.Point(79, 46);
+            this.cbxCompany.Name = "cbxCompany";
+            this.cbxCompany.Size = new System.Drawing.Size(188, 21);
+            this.cbxCompany.TabIndex = 23;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 49);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(51, 13);
+            this.label1.TabIndex = 22;
+            this.label1.Text = "Company";
+            // 
             // CategoryWiseReportForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -205,5 +227,7 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.DateTimePicker dtpFromDate;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.ComboBox cbxCompany;
+        private System.Windows.Forms.Label label1;
     }
 }

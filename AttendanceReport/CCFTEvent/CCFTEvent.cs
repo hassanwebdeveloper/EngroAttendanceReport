@@ -10,6 +10,7 @@ namespace AttendanceReport.CCFTEvent
         public CCFTEvent()
             : base("name=CCFTEvent")
         {
+            Database.SetInitializer<CCFTEvent>(null);
         }
 
         public virtual DbSet<AlarmStack> AlarmStacks { get; set; }

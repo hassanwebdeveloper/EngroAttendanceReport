@@ -52,11 +52,18 @@ namespace AttendanceReport
                 {
                     isVisitor = true;
                 }
-                string category = isVisitor ? "Visitor" : (blockedPerson.CardHolderInfos == null ? (blockedPerson.DailyCardHolders == null ? string.Empty : blockedPerson.DailyCardHolders.ConstractorInfo) : blockedPerson.CardHolderInfos.ConstractorInfo);
+                string category = isVisitor ? "Visitor" : (blockedPerson.CardHolderInfos == null ? (blockedPerson.DailyCardHolders == null ? "Unknown" : blockedPerson.DailyCardHolders.ConstractorInfo) : blockedPerson.CardHolderInfos.ConstractorInfo);
+                category = string.IsNullOrEmpty(category) ? "Unknown" : category;
+
                 string blockedStatus = blockedPerson.Blocked ? "Blocked" : "Un Blocked";
                 string firstName = isVisitor ? blockedPerson.Visitors?.FirstName : (blockedPerson.CardHolderInfos == null ? (blockedPerson.DailyCardHolders == null ? string.Empty : blockedPerson.DailyCardHolders.FirstName) : blockedPerson.CardHolderInfos.FirstName);
                 string cnicNumber = isVisitor ? blockedPerson.Visitors?.FirstName : (blockedPerson.CardHolderInfos == null ? (blockedPerson.DailyCardHolders == null ? string.Empty : blockedPerson.DailyCardHolders.CNICNumber) : blockedPerson.CardHolderInfos.CNICNumber);
-                
+                string blockedBy = blockedPerson.BlockedBy;
+                string blockedReason = blockedPerson.BlockedReason;
+                string unBlockedBy = blockedPerson.UnBlockedBy;
+                string unBlockedReason = blockedPerson.UnBlockedReason;
+
+
                 DateTime blockedTime = blockedPerson.BlockedTime;
                 DateTime unBlockedTime = blockedPerson.UnBlockTime;
 
@@ -69,13 +76,18 @@ namespace AttendanceReport
                         FirstName = firstName,
                         CNICNumber = cnicNumber,
                         BlockedStatus = blockedStatus,
-                        Category = category
+                        Category = category,
+                        BlockedBy = blockedBy,
+                        BlockedReason = blockedReason,
+                        UnBlockedBy = unBlockedBy,
+                        UnBlockedReason = unBlockedReason
                     });
                     
                 }
                 else
                 {
                     List<CardHolderReportInfo> lstChls = new List<CardHolderReportInfo>();
+
                     lstChls.Add(new CardHolderReportInfo()
                     {
                         BlockedTime = blockedTime,
@@ -83,7 +95,11 @@ namespace AttendanceReport
                         FirstName = firstName,
                         CNICNumber = cnicNumber,
                         BlockedStatus = blockedStatus,
-                        Category = category
+                        Category = category,
+                        BlockedBy = blockedBy,
+                        BlockedReason = blockedReason,
+                        UnBlockedBy = unBlockedBy,
+                        UnBlockedReason = unBlockedReason
                     });
                     
 
@@ -140,15 +156,16 @@ namespace AttendanceReport
                                 pdfDocument.AddEventHandler(PdfDocumentEvent.START_PAGE, new PdfHeaderAndFooter(doc, true, headerLeftText, headerRightText));
                                 pdfDocument.AddEventHandler(PdfDocumentEvent.END_PAGE, new PdfHeaderAndFooter(doc, false, footerLeftText, footerRightText));
 
-                                pdfDocument.SetDefaultPageSize(new iText.Kernel.Geom.PageSize(1000F, 842F));
-                                Table table = new Table((new List<float>() { 70F, 250F, 100F, 140F, 140F, 20F }).ToArray());
+                                pdfDocument.SetDefaultPageSize(new iText.Kernel.Geom.PageSize(1370F, 842F));
+                                Table table = new Table((new List<float>() { 70F, 150F, 100F, 150F, 220F, 120F, 150F, 220F, 120F}).ToArray());
 
-
+                                table.SetWidth(1300F);
+                                table.SetFixedLayout();
                                 //Table table = new Table((new List<float>() { 8F, 100F, 150F, 225F, 60F, 40F, 100F, 125F, 150F }).ToArray());
 
                                 this.AddMainHeading(table, heading);
 
-                                //this.AddNewEmptyRow(table);
+                                this.AddNewEmptyRow(table);
                                 //this.AddNewEmptyRow(table);
 
                                 foreach (KeyValuePair<string, List<CardHolderReportInfo>> category in data)
@@ -228,13 +245,16 @@ namespace AttendanceReport
 
                         work.Column(1).Width = 20;
                         work.Column(2).Width = 40;
-                        work.Column(3).Width = 20;
-                        work.Column(4).Width = 25.29;
-                        work.Column(5).Width = 25.29;
-                        work.Column(6).Width = 25;
+                        work.Column(3).Width = 22;
+                        work.Column(4).Width = 40;
+                        work.Column(5).Width = 40;
+                        work.Column(6).Width = 25.29;
+                        work.Column(7).Width = 40;
+                        work.Column(8).Width = 40;
+                        work.Column(9).Width = 25.29;
 
                         //Heading
-                        work.Cells["A1:B2"].Merge = true;
+                        work.Cells["A1:D2"].Merge = true;
                         work.Cells["A1:B2"].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                         work.Cells["A1:B2"].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(252, 213, 180));
                         work.Cells["A1:B2"].Style.Font.Size = 22;
@@ -255,7 +275,7 @@ namespace AttendanceReport
 
                         var pic = work.Drawings.AddPicture("Logo", myImage);
 
-                        pic.SetPosition(5, 1000);
+                        pic.SetPosition(5, 1300);
 
                         int row = 4;
 
@@ -318,50 +338,52 @@ namespace AttendanceReport
 
 
 
-                            work.Cells[row, 1, row, 6].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                            work.Cells[row, 1, row, 6].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                            work.Cells[row, 1, row, 6].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                            work.Cells[row, 1, row, 6].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            work.Cells[row, 1, row, 9].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            work.Cells[row, 1, row, 9].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            work.Cells[row, 1, row, 9].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            work.Cells[row, 1, row, 9].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
 
-                            work.Cells[row, 1, row, 6].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                            work.Cells[row, 1, row, 6].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                            work.Cells[row, 1, row, 6].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                            work.Cells[row, 1, row, 6].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                            work.Cells[row, 1, row, 9].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                            work.Cells[row, 1, row, 9].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                            work.Cells[row, 1, row, 9].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                            work.Cells[row, 1, row, 9].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
 
-                            work.Cells[row, 1, row, 6].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                            work.Cells[row, 1, row, 6].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(253, 233, 217));
-                            work.Cells[row, 1, row, 6].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
-                            work.Cells[row, 1, row, 6].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            work.Cells[row, 1, row, 9].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            work.Cells[row, 1, row, 9].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(253, 233, 217));
+                            work.Cells[row, 1, row, 9].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            work.Cells[row, 1, row, 9].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
                             work.Cells[row, 1].Value = "Blocked Status Number";
                             work.Cells[row, 2].Value = "First Name";
                             work.Cells[row, 3].Value = "CNIC Number";
-                            work.Cells[row, 4].Value = "Blocked Time";
-
-                            work.Cells[row, 5].Value = "UnBlocked Time";
-                            work.Cells[row, 6].Value = "Category";
+                            work.Cells[row, 4].Value = "Blocked By";
+                            work.Cells[row, 5].Value = "Blocked Reason";
+                            work.Cells[row, 6].Value = "Blocked Time";
+                            work.Cells[row, 7].Value = "UnBlocked By";
+                            work.Cells[row, 8].Value = "UnBlocked Reason";
+                            work.Cells[row, 9].Value = "UnBlocked Time";
                             work.Row(row).Height = 20;
 
                             for (int i = 0; i < category.Value.Count; i++)
                             {
                                 row++;
-                                work.Cells[row, 1, row, 6].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                work.Cells[row, 1, row, 6].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                work.Cells[row, 1, row, 6].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                work.Cells[row, 1, row, 6].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                work.Cells[row, 1, row, 9].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                work.Cells[row, 1, row, 9].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                work.Cells[row, 1, row, 9].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                work.Cells[row, 1, row, 9].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
 
-                                work.Cells[row, 1, row, 6].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                work.Cells[row, 1, row, 6].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                work.Cells[row, 1, row, 6].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                work.Cells[row, 1, row, 6].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                work.Cells[row, 1, row, 9].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                work.Cells[row, 1, row, 9].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                work.Cells[row, 1, row, 9].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                work.Cells[row, 1, row, 9].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
 
                                 if (i % 2 == 0)
                                 {
-                                    work.Cells[row, 1, row, 6].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                    work.Cells[row, 1, row, 6].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                                    work.Cells[row, 1, row, 9].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                    work.Cells[row, 1, row, 9].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                                 }
 
-                                work.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+                                work.Cells[row, 1, row, 9].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                                 //work.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                                 //work.Cells[row, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
 
@@ -369,10 +391,12 @@ namespace AttendanceReport
                                 work.Cells[row, 1].Value = chl.BlockedStatus;
                                 work.Cells[row, 2].Value = chl.FirstName;
                                 work.Cells[row, 3].Value = chl.CNICNumber;
+                                work.Cells[row, 4].Value = chl.BlockedBy.ToString();
+                                work.Cells[row, 4].Value = chl.BlockedReason.ToString();
                                 work.Cells[row, 4].Value = chl.BlockedTime.ToString();
-
-                                work.Cells[row, 5].Value = chl.BlockedTime.ToString();
-                                work.Cells[row, 6].Value = chl.Category;
+                                work.Cells[row, 4].Value = chl.UnBlockedBy.ToString();
+                                work.Cells[row, 4].Value = chl.UnBlockedReason.ToString();
+                                work.Cells[row, 5].Value = chl.UnBlockedTime.ToString();
 
                                 work.Row(row).Height = 20;
                             }
@@ -415,7 +439,7 @@ namespace AttendanceReport
 
         private void AddMainHeading(Table table, string heading)
         {
-            Cell headingCell = new Cell(2, 5);
+            Cell headingCell = new Cell(2, 4);
             headingCell.SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER);
             headingCell.SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3));
             headingCell.Add(new Paragraph(heading).SetFontSize(22F).SetBackgroundColor(new DeviceRgb(252, 213, 180))
@@ -425,7 +449,8 @@ namespace AttendanceReport
 
             table.AddCell(headingCell);
             table.AddCell(new Cell().Add(new Paragraph(string.Empty).SetFontSize(22F)).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
-            //table.AddCell(new Cell().Add(new Paragraph(string.Empty).SetFontSize(22F)).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
+            table.AddCell(new Cell().Add(new Paragraph(string.Empty).SetFontSize(22F)).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
+            table.AddCell(new Cell().Add(new Paragraph(string.Empty).SetFontSize(22F)).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
             table.AddCell(new Cell().Add(img).SetMarginLeft(80F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
         }
 
@@ -441,9 +466,9 @@ namespace AttendanceReport
                 table.AddCell(new Cell().SetHeight(6F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
                 table.AddCell(new Cell().SetHeight(6F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
                 table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
-                //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
-                //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
-                //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
             }
             else
             {
@@ -483,23 +508,23 @@ namespace AttendanceReport
                     SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                     SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
 
-                //table.AddCell(new Cell().
-                //    SetHeight(22F).
-                //    SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                //    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                //    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                table.AddCell(new Cell().
+                    SetHeight(22F).
+                    SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
 
-                //table.AddCell(new Cell().
-                //    SetHeight(22F).
-                //    SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                //    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                //    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                table.AddCell(new Cell().
+                    SetHeight(22F).
+                    SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
 
-                //table.AddCell(new Cell().
-                //    SetHeight(22F).
-                //    SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                //    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                //    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                table.AddCell(new Cell().
+                    SetHeight(22F).
+                    SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
             }
 
         }
@@ -528,9 +553,9 @@ namespace AttendanceReport
             table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
             table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
             table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
-            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
-            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
-            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
         }
 
         private void AddCategoryRow(Table table, string categoryName)
@@ -566,9 +591,18 @@ namespace AttendanceReport
             //table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
             //        SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
             //        SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
-            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
-            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
-            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().SetHeight(22F)
+                    .SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().SetHeight(22F)
+                    .SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().SetHeight(22F)
+                    .SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
             //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
         }
         
@@ -603,7 +637,35 @@ namespace AttendanceReport
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
+                    Add(new Paragraph("Blocked By").
+                    SetFontSize(11F)).
+                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+            table.AddCell(new Cell().
+                    Add(new Paragraph("Blocked Reason").
+                    SetFontSize(11F)).
+                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+            table.AddCell(new Cell().
                     Add(new Paragraph("Blocked Time").
+                    SetFontSize(11F)).
+                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+            table.AddCell(new Cell().
+                    Add(new Paragraph("UnBlocked By").
+                    SetFontSize(11F)).
+                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+            table.AddCell(new Cell().
+                    Add(new Paragraph("UnBlocked Reason").
                     SetFontSize(11F)).
                 SetBackgroundColor(new DeviceRgb(253, 233, 217)).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
@@ -616,27 +678,6 @@ namespace AttendanceReport
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            table.AddCell(new Cell().
-                    Add(new Paragraph("Category").
-                    SetFontSize(11F)).
-                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
-                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            //table.AddCell(new Cell().
-            //        Add(new Paragraph("CNIC Number").
-            //        SetFontSize(11F)).
-            //    SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-            //    SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-            //    SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
-            //    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            //table.AddCell(new Cell().
-            //        Add(new Paragraph("Company Name").
-            //        SetFontSize(11F)).
-            //    SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-            //    SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-            //    SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
-            //    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
         }
 
         private void AddTableDataRow(Table table, CardHolderReportInfo chl, bool altRow)
@@ -659,58 +700,64 @@ namespace AttendanceReport
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.FirstName) ? string.Empty : chl.FirstName).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.CNICNumber) ? string.Empty : chl.CNICNumber).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
-                    Add(new Paragraph(string.IsNullOrEmpty(chl.BlockedTime.ToString()) ? string.Empty : chl.BlockedTime.ToString()).
+                    Add(new Paragraph(string.IsNullOrEmpty(chl.BlockedBy) ? string.Empty : chl.BlockedBy).
+                    SetFontSize(11F)).
+                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
+                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));            
+            table.AddCell(new Cell().
+                    Add(new Paragraph(string.IsNullOrEmpty(chl.BlockedReason) ? string.Empty : chl.BlockedReason).
+                    SetFontSize(11F)).
+                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
+                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));           
+            table.AddCell(new Cell().
+                    Add(new Paragraph(chl.BlockedTime.ToString()).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            
             table.AddCell(new Cell().
-                    Add(new Paragraph(string.IsNullOrEmpty(chl.UnBlockedTime.ToString()) ? string.Empty : chl.UnBlockedTime.ToString()).
+                    Add(new Paragraph(string.IsNullOrEmpty(chl.UnBlockedBy) ? string.Empty : chl.UnBlockedBy).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
-                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));           
-            table.AddCell(new Cell().
-                    Add(new Paragraph(string.IsNullOrEmpty(chl.Category) ? string.Empty : chl.Category).
-                    SetFontSize(11F)).
-                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            //table.AddCell(new Cell().
-            //        Add(new Paragraph(string.IsNullOrEmpty(chl.CNICNumber) ? string.Empty : chl.CNICNumber).
-            //        SetFontSize(11F)).
-            //    SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-            //    SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-            //    SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
-            //    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            //table.AddCell(new Cell().
-            //        Add(new Paragraph(string.IsNullOrEmpty(chl.Company) ? string.Empty : chl.Company).
-            //        SetFontSize(11F)).
-            //    SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-            //    SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-            //    SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
-            //    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+            table.AddCell(new Cell().
+                    Add(new Paragraph(string.IsNullOrEmpty(chl.UnBlockedReason) ? string.Empty : chl.UnBlockedReason).
+                    SetFontSize(11F)).
+                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
+                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+            table.AddCell(new Cell().
+                    Add(new Paragraph(chl.UnBlockedTime == DateTime.MaxValue ? string.Empty : chl.UnBlockedTime.ToString()).
+                    SetFontSize(11F)).
+                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
+                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
         }
     }
 }

@@ -67,11 +67,12 @@ namespace AttendanceReport
 
             foreach (EFERTDb.CardHolderInfo cardHolder in chls)
             {
-                LimitStatus limitStatus = EFERTDbUtility.CheckIfUserCheckedInLimitReached(cardHolder.CheckInInfos);
+                LimitStatus limitStatus = EFERTDbUtility.CheckIfUserCheckedInLimitReached(cardHolder.CheckInInfos, cardHolder.BlockingInfos, false);
 
                 if (limitStatus == LimitStatus.LimitReached || limitStatus == LimitStatus.EmailAlerted)
                 {
                     string category = cardHolder.ConstractorInfo;
+                    category = string.IsNullOrEmpty(category) ? "Unknown" : category;
                     string firstName = cardHolder.FirstName;
                     string cnicNumber = cardHolder.CNICNumber;
                     string blockedStatus = limitStatus == LimitStatus.LimitReached? "Blocked" : "Alarmed" ;
@@ -107,11 +108,12 @@ namespace AttendanceReport
 
             foreach (EFERTDb.DailyCardHolder dailyCardHolder in dailyChls)
             {
-                LimitStatus limitStatus = EFERTDbUtility.CheckIfUserCheckedInLimitReached(dailyCardHolder.CheckInInfos);
+                LimitStatus limitStatus = EFERTDbUtility.CheckIfUserCheckedInLimitReached(dailyCardHolder.CheckInInfos, dailyCardHolder.BlockingInfos, false);
 
                 if (limitStatus == LimitStatus.LimitReached || limitStatus == LimitStatus.EmailAlerted)
                 {
                     string category = dailyCardHolder.ConstractorInfo;
+                    category = string.IsNullOrEmpty(category) ? "Unknown" : category;
                     string firstName = dailyCardHolder.FirstName;
                     string cnicNumber = dailyCardHolder.CNICNumber;
                     string blockedStatus = limitStatus == LimitStatus.LimitReached ? "Blocked" : "Alarmed";
@@ -147,11 +149,12 @@ namespace AttendanceReport
 
             foreach (EFERTDb.VisitorCardHolder visitor in visitorChls)
             {
-                LimitStatus limitStatus = EFERTDbUtility.CheckIfUserCheckedInLimitReached(visitor.CheckInInfos);
+                LimitStatus limitStatus = EFERTDbUtility.CheckIfUserCheckedInLimitReached(visitor.CheckInInfos, visitor.BlockingInfos, false);
 
                 if (limitStatus == LimitStatus.LimitReached || limitStatus == LimitStatus.EmailAlerted)
                 {
                     string category = visitor.VisitorInfo;
+                    category = string.IsNullOrEmpty(category) ? "Unknown" : category;
                     string firstName = visitor.FirstName;
                     string cnicNumber = visitor.CNICNumber;
                     string blockedStatus = limitStatus == LimitStatus.LimitReached ? "Blocked" : "Alarmed";
@@ -244,7 +247,7 @@ namespace AttendanceReport
 
                                 this.AddMainHeading(table, heading);
 
-                                //this.AddNewEmptyRow(table);
+                                this.AddNewEmptyRow(table);
                                 //this.AddNewEmptyRow(table);
 
                                 //Sections and Data
@@ -355,7 +358,7 @@ namespace AttendanceReport
                         pic.SetPosition(5, 600);
 
                         int row = 4;
-                        
+
 
                         row++;
                         work.Cells[row, 1].Style.Font.Bold = true;
@@ -370,87 +373,86 @@ namespace AttendanceReport
                         row++;
                         //Sections and Data
 
-                        
 
-                                foreach (KeyValuePair<string, List<CardHolderReportInfo>> category in data)
+
+                        foreach (KeyValuePair<string, List<CardHolderReportInfo>> category in data)
+                        {
+
+                            if (category.Value == null)
+                            {
+                                continue;
+                            }
+
+                            //Section
+                            work.Cells[row, 1].Style.Font.Bold = true;
+                            work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                            work.Cells[row, 1, row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            work.Cells[row, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            work.Cells[row, 1].Value = "Category:";
+                            work.Cells[row, 2].Value = category.Key;
+                            work.Row(row).Height = 20;
+
+                            //Data
+                            row++;
+
+
+                            work.Cells[row, 1, row, 4].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            work.Cells[row, 1, row, 4].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            work.Cells[row, 1, row, 4].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            work.Cells[row, 1, row, 4].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                            work.Cells[row, 1, row, 4].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                            work.Cells[row, 1, row, 4].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                            work.Cells[row, 1, row, 4].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                            work.Cells[row, 1, row, 4].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+
+                            work.Cells[row, 1, row, 4].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            work.Cells[row, 1, row, 4].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(253, 233, 217));
+                            work.Cells[row, 1, row, 4].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            work.Cells[row, 1, row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                            work.Cells[row, 1].Value = "Category";
+                            work.Cells[row, 2].Value = "First Name";
+                            work.Cells[row, 3].Value = "CNIC Number";
+                            work.Cells[row, 4].Value = "Blocked Status";
+                            work.Row(row).Height = 20;
+
+                            for (int i = 0; i < category.Value.Count; i++)
+                            {
+                                row++;
+                                work.Cells[row, 1, row, 4].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                work.Cells[row, 1, row, 4].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                work.Cells[row, 1, row, 4].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                work.Cells[row, 1, row, 4].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                                work.Cells[row, 1, row, 4].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                work.Cells[row, 1, row, 4].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                work.Cells[row, 1, row, 4].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                work.Cells[row, 1, row, 4].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+
+                                if (i % 2 == 0)
                                 {
-
-                                    if (category.Value == null)
-                                    {
-                                        continue;
-                                    }
-
-                                    //Section
-                                    work.Cells[row, 1].Style.Font.Bold = true;
-                                    work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                    work.Cells[row, 1, row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
-                                    work.Cells[row, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
-                                    work.Cells[row, 1].Value = "Category:";
-                                    work.Cells[row, 2].Value = category.Key;
-                                    work.Row(row).Height = 20;
-
-                                    //Data
-                                    row++;
-
-
-                                    work.Cells[row, 1, row, 4].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                    work.Cells[row, 1, row, 4].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                    work.Cells[row, 1, row, 4].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                    work.Cells[row, 1, row, 4].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-
-                                    work.Cells[row, 1, row, 4].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                    work.Cells[row, 1, row, 4].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                    work.Cells[row, 1, row, 4].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                    work.Cells[row, 1, row, 4].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-
                                     work.Cells[row, 1, row, 4].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                    work.Cells[row, 1, row, 4].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(253, 233, 217));
-                                    work.Cells[row, 1, row, 4].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
-                                    work.Cells[row, 1, row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-
-                                    work.Cells[row, 1].Value = "Card Number";
-                                    work.Cells[row, 2].Value = "First Name";
-                                    work.Cells[row, 3].Value = "CNIC Number";
-                                    work.Cells[row, 4].Value = "Blocked Status";
-                                    work.Row(row).Height = 20;
-
-                                    for (int i = 0; i < category.Value.Count; i++)
-                                    {
-                                        row++;
-                                        work.Cells[row, 1, row, 4].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                        work.Cells[row, 1, row, 4].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                        work.Cells[row, 1, row, 4].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                        work.Cells[row, 1, row, 4].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-
-                                        work.Cells[row, 1, row, 4].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                        work.Cells[row, 1, row, 4].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                        work.Cells[row, 1, row, 4].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                        work.Cells[row, 1, row, 4].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-
-                                        if (i % 2 == 0)
-                                        {
-                                            work.Cells[row, 1, row, 4].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                            work.Cells[row, 1, row, 4].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
-                                        }
-
-                                        work.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
-                                        work.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                                        work.Cells[row, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
-
-                                        CardHolderReportInfo chl = category.Value[i];
-                                        work.Cells[row, 1].Value = chl.CardNumber;
-                                        work.Cells[row, 2].Value = chl.OccurrenceTime.ToString();
-                                        work.Cells[row, 3].Value = chl.PNumber;
-                                        work.Cells[row, 4].Value = chl.FirstName;
-
-                                        work.Row(row).Height = 20;
-                                    }
-
-                                    row++;
-                                    row++;
+                                    work.Cells[row, 1, row, 4].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                                 }
 
-                                
+                                work.Cells[row, 1, row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                                CardHolderReportInfo chl = category.Value[i];
+
+                                work.Cells[row, 1].Value = chl.Category;
+                                work.Cells[row, 2].Value = chl.FirstName;
+                                work.Cells[row, 3].Value = chl.CNICNumber;
+                                work.Cells[row, 4].Value = chl.BlockedStatus;
+
+                                work.Row(row).Height = 20;
+                            }
+
+                            row++;
+                            row++;
+                        }
+
+
                         ex.SaveAs(new System.IO.FileInfo(this.saveFileDialog1.FileName));
 
                         System.Diagnostics.Process.Start(this.saveFileDialog1.FileName);
@@ -611,7 +613,7 @@ namespace AttendanceReport
                 SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                 SetBorderBottom(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
             table.AddCell(new Cell().
-                    Add(new Paragraph("Card Number").
+                    Add(new Paragraph("Category").
                     SetFontSize(11F)).
                 SetBackgroundColor(new DeviceRgb(253, 233, 217)).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
@@ -684,11 +686,11 @@ namespace AttendanceReport
                 SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                 SetBorderBottom(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
             table.AddCell(new Cell().
-                    Add(new Paragraph(string.IsNullOrEmpty(chl.CardNumber) ? string.Empty : chl.CardNumber).
+                    Add(new Paragraph(string.IsNullOrEmpty(chl.Category) ? string.Empty : chl.CardNumber).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.FirstName) ? string.Empty : chl.FirstName).
@@ -702,14 +704,14 @@ namespace AttendanceReport
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.BlockedStatus) ? string.Empty : chl.BlockedStatus).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             //table.AddCell(new Cell().
             //        Add(new Paragraph(string.IsNullOrEmpty(chl.Crew) ? string.Empty : chl.Crew).

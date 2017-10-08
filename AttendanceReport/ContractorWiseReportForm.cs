@@ -29,7 +29,7 @@ namespace AttendanceReport
             InitializeComponent();
 
             this.mCardNotReturned = cardNotReturned;
-            EFERTDbUtility.UpdateDropDownFields(null, null, this.cbxCompany, null);
+            EFERTDbUtility.UpdateDropDownFields(null, null, this.cbxCompany, null, null);
         }
 
         private void btnGenerate_Click(object sender, EventArgs e)
@@ -109,13 +109,15 @@ namespace AttendanceReport
                         continue;
                     }
 
-                    string category = checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? string.Empty : checkIn.DailyCardHolders.ConstractorInfo) : checkIn.CardHolderInfos.ConstractorInfo;
+                    string category = checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? "Unknown" : checkIn.DailyCardHolders.ConstractorInfo) : checkIn.CardHolderInfos.ConstractorInfo;
+                    category = string.IsNullOrEmpty(category) ? "Unknown" : category;
 
                     if (category == "WO Staff" || category == "Contractor")
                     {
-                        string contractorName = checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? string.Empty : checkIn.DailyCardHolders.CompanyName) : (checkIn.CardHolderInfos.Company == null ? string.Empty : checkIn.CardHolderInfos.Company.CompanyName);
-                        string firstName = checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? string.Empty : checkIn.DailyCardHolders.FirstName) : checkIn.CardHolderInfos.FirstName;
-                        string cnicNumber = checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? string.Empty : checkIn.DailyCardHolders.CNICNumber) : checkIn.CardHolderInfos.CNICNumber;
+                        string contractorName = checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? "Unknown" : checkIn.DailyCardHolders.CompanyName) : (checkIn.CardHolderInfos.Company == null ? "Unknown" : checkIn.CardHolderInfos.Company.CompanyName);
+                        contractorName = string.IsNullOrEmpty(contractorName) ? "Unknown" : contractorName;
+                        string firstName = checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? "Unknown" : checkIn.DailyCardHolders.FirstName) : checkIn.CardHolderInfos.FirstName;
+                        string cnicNumber = checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? "Unknown" : checkIn.DailyCardHolders.CNICNumber) : checkIn.CardHolderInfos.CNICNumber;
                         string cardNumber = checkIn.CardNumber;
                         DateTime occurranceTime = checkIn.DateTimeIn;
 
@@ -240,7 +242,7 @@ namespace AttendanceReport
 
                                 this.AddMainHeading(table, heading);
 
-                                //this.AddNewEmptyRow(table);
+                                this.AddNewEmptyRow(table);
                                 //this.AddNewEmptyRow(table);
                                 
                                     foreach (KeyValuePair<string, Dictionary<string, List<CardHolderReportInfo>>> category in data)
@@ -484,11 +486,12 @@ namespace AttendanceReport
                                         work.Cells[row, 1, row, 6].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                                     }
 
-                                    work.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+                                    work.Cells[row, 1, row, 6].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                                     //work.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                                     //work.Cells[row, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
 
                                     CardHolderReportInfo chl = contractor.Value[i];
+
                                     work.Cells[row, 1].Value = chl.CardNumber;
                                     work.Cells[row, 2].Value = chl.OccurrenceTime.ToString();
                                     work.Cells[row, 3].Value = chl.FirstName;
@@ -820,7 +823,7 @@ namespace AttendanceReport
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.OccurrenceTime.ToString()) ? string.Empty : chl.OccurrenceTime.ToString()).
@@ -834,28 +837,28 @@ namespace AttendanceReport
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.CNICNumber) ? string.Empty : chl.CNICNumber).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.ContractorName) ? string.Empty : chl.ContractorName).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.Category) ? string.Empty : chl.Category).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             //table.AddCell(new Cell().
             //        Add(new Paragraph(string.IsNullOrEmpty(chl.CNICNumber) ? string.Empty : chl.CNICNumber).

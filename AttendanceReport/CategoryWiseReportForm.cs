@@ -30,6 +30,8 @@ namespace AttendanceReport
             InitializeComponent();
 
             this.mCardNotReturned = cardNotReturned;
+
+            EFERTDbUtility.UpdateDropDownFields(null, null, this.cbxCompany, null, null);
         }
 
         private void btnGenerate_Click(object sender, EventArgs e)
@@ -49,6 +51,7 @@ namespace AttendanceReport
                 string filterByCategory = this.cbxCategory.Text?.ToLower();
                 this.mIsVisitorReport = filterByCategory == "visitor";
                 string filterByCNIC = this.tbxCnic.Text;
+                string filterByCompany = this.mIsVisitorReport ? string.Empty : this.cbxCompany.Text.ToLower();
 
                 //collect all checkins with in this due date (try to collect filtered other wise filter it acc to the filter)
                 List<CheckInAndOutInfo> filteredCheckIns = new List<CheckInAndOutInfo>();
@@ -71,18 +74,24 @@ namespace AttendanceReport
                         filteredCheckIns = (from checkin in EFERTDbUtility.mEFERTDb.CheckedInInfos
                                             where checkin != null && checkin.CheckedIn && checkin.DateTimeIn >= fromDate && checkin.DateTimeIn < toDate &&
                                                         (string.IsNullOrEmpty(filerByName) ||
-                                                         ((checkin.CardHolderInfos != null &&
+                                                           ((checkin.CardHolderInfos != null &&
                                                            checkin.CardHolderInfos.FirstName.ToLower().Contains(filerByName)) ||
                                                            (checkin.DailyCardHolders != null &&
                                                            checkin.DailyCardHolders.FirstName.ToLower().Contains(filerByName)))) &&
                                                         (string.IsNullOrEmpty(filterByCategory) ||
-                                                         ((checkin.CardHolderInfos != null &&
+                                                           ((checkin.CardHolderInfos != null &&
                                                            checkin.CardHolderInfos.ConstractorInfo != null &&
                                                            checkin.CardHolderInfos.ConstractorInfo.ToLower() == filterByCategory) ||
                                                            (checkin.DailyCardHolders != null &&
                                                            checkin.DailyCardHolders.ConstractorInfo.ToLower() == filterByCategory))) &&
-                                                        (string.IsNullOrEmpty(filterByCNIC) ||
-                                                         ((checkin.CardHolderInfos != null &&
+                                                         (string.IsNullOrEmpty(filterByCompany) ||
+                                                           ((checkin.CardHolderInfos != null &&
+                                                           checkin.CardHolderInfos.Company != null &&
+                                                           checkin.CardHolderInfos.Company.CompanyName.ToLower() == filterByCompany) ||
+                                                           (checkin.DailyCardHolders != null &&
+                                                           checkin.DailyCardHolders.CompanyName.ToLower() == filterByCompany))) &&
+                                                         (string.IsNullOrEmpty(filterByCNIC) ||
+                                                           ((checkin.CardHolderInfos != null &&
                                                            checkin.CardHolderInfos.CNICNumber == filterByCNIC) ||
                                                            (checkin.DailyCardHolders != null &&
                                                            checkin.DailyCardHolders.CNICNumber == filterByCNIC)))
@@ -115,13 +124,19 @@ namespace AttendanceReport
                                                            (checkin.DailyCardHolders != null &&
                                                            checkin.DailyCardHolders.FirstName.ToLower().Contains(filerByName)))) &&
                                                         (string.IsNullOrEmpty(filterByCategory) ||
-                                                         ((checkin.CardHolderInfos != null &&
+                                                           ((checkin.CardHolderInfos != null &&
                                                            checkin.CardHolderInfos.ConstractorInfo != null &&
                                                            checkin.CardHolderInfos.ConstractorInfo.ToLower() == filterByCategory) ||
                                                            (checkin.DailyCardHolders != null &&
                                                            checkin.DailyCardHolders.ConstractorInfo.ToLower() == filterByCategory))) &&
+                                                         (string.IsNullOrEmpty(filterByCompany) ||
+                                                           ((checkin.CardHolderInfos != null &&
+                                                           checkin.CardHolderInfos.Company != null &&
+                                                           checkin.CardHolderInfos.Company.CompanyName.ToLower() == filterByCompany) ||
+                                                           (checkin.DailyCardHolders != null &&
+                                                           checkin.DailyCardHolders.CompanyName.ToLower() == filterByCompany))) &&
                                                         (string.IsNullOrEmpty(filterByCNIC) ||
-                                                         ((checkin.CardHolderInfos != null &&
+                                                           ((checkin.CardHolderInfos != null &&
                                                            checkin.CardHolderInfos.CNICNumber == filterByCNIC) ||
                                                            (checkin.DailyCardHolders != null &&
                                                            checkin.DailyCardHolders.CNICNumber == filterByCNIC)))
@@ -151,24 +166,28 @@ namespace AttendanceReport
                             continue;
                         }
                     }
-                    string category = this.mIsVisitorReport ? "Visitor" : (checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? string.Empty : checkIn.DailyCardHolders.ConstractorInfo) : checkIn.CardHolderInfos.ConstractorInfo);
-                    string contractorName = this.mIsVisitorReport ? checkIn.Visitors?.VisitorInfo : (checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? string.Empty : checkIn.DailyCardHolders.CompanyName) : (checkIn.CardHolderInfos.Company == null ? string.Empty : checkIn.CardHolderInfos.Company.CompanyName));
-                    string firstName = this.mIsVisitorReport ? checkIn.Visitors?.FirstName : (checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? string.Empty : checkIn.DailyCardHolders.FirstName) : checkIn.CardHolderInfos.FirstName);
-                    string cnicNumber = this.mIsVisitorReport ? checkIn.Visitors?.FirstName : (checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? string.Empty : checkIn.DailyCardHolders.CNICNumber) : checkIn.CardHolderInfos.CNICNumber);
+                    string category = this.mIsVisitorReport ? "Visitor" : (checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? "Unknown" : checkIn.DailyCardHolders.ConstractorInfo) : checkIn.CardHolderInfos.ConstractorInfo);
+                    category = string.IsNullOrEmpty(category) ? "Unknown" : category;
+
+                    string companyName = this.mIsVisitorReport ? (checkIn.Visitors == null ? "Unknown" : checkIn.Visitors.VisitorInfo) : (checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? "Unknown" : checkIn.DailyCardHolders.CompanyName) : (checkIn.CardHolderInfos.Company == null ? "Unknown" : checkIn.CardHolderInfos.Company.CompanyName));
+                    companyName = string.IsNullOrEmpty(companyName) ? "Unknown" : companyName;
+
+                    string firstName = this.mIsVisitorReport ? (checkIn.Visitors == null ? "Unknown" : checkIn.Visitors.FirstName) : (checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? "Unknown" : checkIn.DailyCardHolders.FirstName) : checkIn.CardHolderInfos.FirstName);
+                    string cnicNumber = this.mIsVisitorReport ? (checkIn.Visitors == null ? "Unknown" : checkIn.Visitors.CNICNumber) : (checkIn.CardHolderInfos == null ? (checkIn.DailyCardHolders == null ? "Unknown" : checkIn.DailyCardHolders.CNICNumber) : checkIn.CardHolderInfos.CNICNumber);
                     string cardNumber = checkIn.CardNumber;
                     DateTime occurranceTime = checkIn.DateTimeIn;
 
                     if (this.mLstCardHolders.ContainsKey(category))
                     {
-                        if (this.mLstCardHolders[category].ContainsKey(contractorName))
+                        if (this.mLstCardHolders[category].ContainsKey(companyName))
                         {
-                            this.mLstCardHolders[category][contractorName].Add(new CardHolderReportInfo()
+                            this.mLstCardHolders[category][companyName].Add(new CardHolderReportInfo()
                             {
                                 CardNumber = cardNumber,
                                 OccurrenceTime = occurranceTime,
                                 FirstName = firstName,
                                 CNICNumber = cnicNumber,
-                                ContractorName = contractorName,
+                                Company = companyName,
                                 Category = category
                             });
                         }
@@ -181,11 +200,11 @@ namespace AttendanceReport
                                 OccurrenceTime = occurranceTime,
                                 FirstName = firstName,
                                 CNICNumber = cnicNumber,
-                                ContractorName = contractorName,
+                                Company = companyName,
                                 Category = category
                             });
 
-                            this.mLstCardHolders[category].Add(contractorName, lstChls);
+                            this.mLstCardHolders[category].Add(companyName, lstChls);
                         }
                     }
                     else
@@ -197,15 +216,15 @@ namespace AttendanceReport
                             OccurrenceTime = occurranceTime,
                             FirstName = firstName,
                             CNICNumber = cnicNumber,
-                            ContractorName = contractorName,
+                            Company = companyName,
                             Category = category
                         });
 
-                        Dictionary<string, List<CardHolderReportInfo>> dictContractor = new Dictionary<string, List<CardHolderReportInfo>>();
+                        Dictionary<string, List<CardHolderReportInfo>> dictCompany = new Dictionary<string, List<CardHolderReportInfo>>();
 
-                        dictContractor.Add(contractorName, lstChls);
+                        dictCompany.Add(companyName, lstChls);
 
-                        this.mLstCardHolders.Add(category, dictContractor);
+                        this.mLstCardHolders.Add(category, dictCompany);
                     }
                 }
 
@@ -219,9 +238,9 @@ namespace AttendanceReport
                     MessageBox.Show(this, "No data exist on current selected date range.");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                MessageBox.Show(this, ex.Message);
             }
             finally
             {
@@ -271,14 +290,15 @@ namespace AttendanceReport
                                 pdfDocument.AddEventHandler(PdfDocumentEvent.END_PAGE, new PdfHeaderAndFooter(doc, false, footerLeftText, footerRightText));
 
                                 pdfDocument.SetDefaultPageSize(new iText.Kernel.Geom.PageSize(1000F, 842F));
-                                Table table = new Table((new List<float>() { 90F, 140F, 250F, 100F, 280F, 20F }).ToArray());
+                                Table table = new Table((new List<float>() { 90F, 140F, 250F, 120F, 240F, 120F }).ToArray());
 
-
+                                table.SetWidth(980F);
+                                table.SetFixedLayout();
                                 //Table table = new Table((new List<float>() { 8F, 100F, 150F, 225F, 60F, 40F, 100F, 125F, 150F }).ToArray());
 
                                 this.AddMainHeading(table, heading);
 
-                                //this.AddNewEmptyRow(table);
+                                this.AddNewEmptyRow(table);
                                 //this.AddNewEmptyRow(table);
 
                                 foreach (KeyValuePair<string, Dictionary<string, List<CardHolderReportInfo>>> category in data)
@@ -292,24 +312,24 @@ namespace AttendanceReport
                                     this.AddCategoryRow(table, category.Key);
 
 
-                                    foreach (KeyValuePair<string, List<CardHolderReportInfo>> contractor in category.Value)
+                                    foreach (KeyValuePair<string, List<CardHolderReportInfo>> company in category.Value)
                                     {
-                                        if (contractor.Value == null)
+                                        if (company.Value == null)
                                         {
                                             continue;
                                         }
 
-                                        //Contractor
-                                        this.AddContractorRow(table, contractor.Key);
+                                        //Company
+                                        this.AddCompanyRow(table, company.Key);
 
                                         //Data
                                         //this.AddNewEmptyRow(table, false);
 
                                         this.AddTableHeaderRow(table);
 
-                                        for (int i = 0; i < contractor.Value.Count; i++)
+                                        for (int i = 0; i < company.Value.Count; i++)
                                         {
-                                            CardHolderReportInfo chl = contractor.Value[i];
+                                            CardHolderReportInfo chl = company.Value[i];
                                             this.AddTableDataRow(table, chl, i % 2 == 0);
                                         }
 
@@ -458,10 +478,10 @@ namespace AttendanceReport
                             //Data
                             row++;
 
-                            foreach (KeyValuePair<string, List<CardHolderReportInfo>> contractor in category.Value)
+                            foreach (KeyValuePair<string, List<CardHolderReportInfo>> company in category.Value)
                             {
 
-                                if (contractor.Value == null)
+                                if (company.Value == null)
                                 {
                                     continue;
                                 }
@@ -471,9 +491,9 @@ namespace AttendanceReport
                                 work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                                 work.Cells[row, 1, row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
                                 work.Cells[row, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
-                                work.Cells[row, 1].Value = this.mIsVisitorReport ? "Visitor Type:" : "Contractor:";
+                                work.Cells[row, 1].Value = this.mIsVisitorReport ? "Visitor Type:" : "Company:";
                                 work.Cells[row, 2, row, 3].Merge = true;
-                                work.Cells[row, 2, row, 3].Value = contractor.Key;
+                                work.Cells[row, 2, row, 3].Value = company.Key;
                                 work.Row(row).Height = 20;
 
                                 //Data
@@ -499,11 +519,11 @@ namespace AttendanceReport
                                 work.Cells[row, 2].Value = "Occurrance Time";
                                 work.Cells[row, 3].Value = "First Name";
                                 work.Cells[row, 4].Value = "CNIC Number";
-                                work.Cells[row, 5].Value = this.mIsVisitorReport ? "Visitor Type:" : "Contractor Name";
+                                work.Cells[row, 5].Value = this.mIsVisitorReport ? "Visitor Type:" : "Company Name";
                                 work.Cells[row, 6].Value = "Category";
                                 work.Row(row).Height = 20;
 
-                                for (int i = 0; i < contractor.Value.Count; i++)
+                                for (int i = 0; i < company.Value.Count; i++)
                                 {
                                     row++;
                                     work.Cells[row, 1, row, 6].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
@@ -522,16 +542,16 @@ namespace AttendanceReport
                                         work.Cells[row, 1, row, 6].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                                     }
 
-                                    work.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+                                    work.Cells[row, 1, row, 6].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                                     //work.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                                     //work.Cells[row, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
 
-                                    CardHolderReportInfo chl = contractor.Value[i];
+                                    CardHolderReportInfo chl = company.Value[i];
                                     work.Cells[row, 1].Value = chl.CardNumber;
                                     work.Cells[row, 2].Value = chl.OccurrenceTime.ToString();
                                     work.Cells[row, 3].Value = chl.FirstName;
                                     work.Cells[row, 4].Value = chl.CNICNumber;
-                                    work.Cells[row, 5].Value = chl.ContractorName;
+                                    work.Cells[row, 5].Value = chl.Company;
                                     work.Cells[row, 6].Value = chl.Category;
 
                                     work.Row(row).Height = 20;
@@ -733,7 +753,7 @@ namespace AttendanceReport
             //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
         }
 
-        private void AddContractorRow(Table table, string contractorName)
+        private void AddCompanyRow(Table table, string companyName)
         {
             table.StartNewRow();
 
@@ -741,7 +761,7 @@ namespace AttendanceReport
             //        SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
             //        SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
             table.AddCell(new Cell(1, 2).
-                    Add(new Paragraph(this.mIsVisitorReport ? "Visitor Type:" :"Contractor:").
+                    Add(new Paragraph(this.mIsVisitorReport ? "Visitor Type:" :"Company:").
                     SetFontSize(11F).
                     SetBold().
                     SetFontColor(new DeviceRgb(247, 150, 70))).
@@ -752,7 +772,7 @@ namespace AttendanceReport
                     SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                     SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
             table.AddCell(new Cell(1, 4).
-                    Add(new Paragraph(contractorName).
+                    Add(new Paragraph(companyName).
                     SetFontSize(11F)).
                 SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
@@ -809,7 +829,7 @@ namespace AttendanceReport
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
-                    Add(new Paragraph(this.mIsVisitorReport ? "Visitor Type:" : "Contractor Name").
+                    Add(new Paragraph(this.mIsVisitorReport ? "Visitor Type:" : "Company Name").
                     SetFontSize(11F)).
                 SetBackgroundColor(new DeviceRgb(253, 233, 217)).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
@@ -858,7 +878,7 @@ namespace AttendanceReport
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.OccurrenceTime.ToString()) ? string.Empty : chl.OccurrenceTime.ToString()).
@@ -872,28 +892,28 @@ namespace AttendanceReport
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.CNICNumber) ? string.Empty : chl.CNICNumber).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
-                    Add(new Paragraph(string.IsNullOrEmpty(chl.ContractorName) ? string.Empty : chl.ContractorName).
+                    Add(new Paragraph(string.IsNullOrEmpty(chl.Company) ? string.Empty : chl.Company).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.Category) ? string.Empty : chl.Category).
                     SetFontSize(11F)).
                 SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
                 SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             //table.AddCell(new Cell().
             //        Add(new Paragraph(string.IsNullOrEmpty(chl.CNICNumber) ? string.Empty : chl.CNICNumber).

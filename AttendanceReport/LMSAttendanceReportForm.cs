@@ -24,13 +24,14 @@ namespace AttendanceReport
 {
     public partial class LMSAttendanceReportForm : Form
     {
-        private Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> mData = null;
+        //              Department          Section             Cadre             CNIC Number
+        private Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>>> mData = null;
 
         public LMSAttendanceReportForm()
         {
             InitializeComponent();
 
-            EFERTDbUtility.UpdateDropDownFields(this.cbxDepartments, this.cbxSections, this.cbxCompany, this.cbxCadre);
+            EFERTDbUtility.UpdateDropDownFields(this.cbxDepartments, this.cbxSections, this.cbxCompany, this.cbxCadre, null);
         }
 
         private void btnGenerate_Click(object sender, EventArgs e)
@@ -39,16 +40,63 @@ namespace AttendanceReport
             DateTime fromDate = this.dtpFromDate.Value.Date;
             DateTime toDate = this.dtpToDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
 
-            TimeSpan ndtStart = this.dtpNdtStart.Value.TimeOfDay;
-            TimeSpan ndtEnd = this.dtpNdtEnd.Value.TimeOfDay;
-            TimeSpan ndtLunchStart = this.dtpNdtLunchStart.Value.TimeOfDay;
-            TimeSpan ndtLunchEnd = this.dtpNdtLunchEnd.Value.TimeOfDay;
+            DateTime ndtStartDate = this.dtpNdtStart.Value;
+            DateTime ndtEndDate = this.dtpNdtEnd.Value;
+            DateTime ndtLunchStartDate = this.dtpNdtLunchStart.Value;
+            DateTime ndtLunchEndDate = this.dtpNdtLunchEnd.Value;
 
-            TimeSpan fdtStart = this.dtpFdtStart.Value.TimeOfDay;
-            TimeSpan fdtEnd = this.dtpFdtEnd.Value.TimeOfDay;
-            TimeSpan fdtLunchStart = this.dtpFdtLunchStart.Value.TimeOfDay;
-            TimeSpan fdtLunchEnd = this.dtpFdtLunchEnd.Value.TimeOfDay;
+            DateTime fdtStartDate = this.dtpFdtStart.Value;
+            DateTime fdtEndDate = this.dtpFdtEnd.Value;
+            DateTime fdtLunchStartDate = this.dtpFdtLunchStart.Value;
+            DateTime fdtLunchEndDate = this.dtpFdtLunchEnd.Value;
 
+            int ndtGraceTimeBeforeStart = Convert.ToInt32(nudNdtGraceTimeBeforeStart.Value);
+            int ndtGraceTimeAfterStart = Convert.ToInt32(nudNdtGraceTimeBeforeStart.Value);
+            int ndtGraceTimeBeforeEnd = Convert.ToInt32(nudNdtGraceTimeBeforeEnd.Value);
+            int ndtGraceTimeAfterEnd = Convert.ToInt32(nudNdtGraceTimeBeforeEnd.Value);
+            int ndtGraceTimeBeforeLunchStart = Convert.ToInt32(nudNdtGraceTimeBeforeLunchStart.Value);
+            int ndtGraceTimeAfterLunchStart = Convert.ToInt32(nudNdtGraceTimeBeforeLunchStart.Value);
+            int ndtGraceTimeBeforeLunchEnd = Convert.ToInt32(nudNdtGraceTimeBeforeLunchEnd.Value);
+            int ndtGraceTimeAfterLunchEnd = Convert.ToInt32(nudNdtGraceTimeBeforeLunchEnd.Value);
+
+            int fdtGraceTimeBeforeStart = Convert.ToInt32(nudFdtGraceTimeBeforeStart.Value);
+            int fdtGraceTimeAfterStart = Convert.ToInt32(nudFdtGraceTimeBeforeStart.Value);
+            int fdtGraceTimeBeforeEnd = Convert.ToInt32(nudFdtGraceTimeBeforeEnd.Value);
+            int fdtGraceTimeAfterEnd = Convert.ToInt32(nudFdtGraceTimeBeforeEnd.Value);
+            int fdtGraceTimeBeforeLunchStart = Convert.ToInt32(nudFdtGraceTimeBeforeLunchStart.Value);
+            int fdtGraceTimeAfterLunchStart = Convert.ToInt32(nudFdtGraceTimeBeforeLunchStart.Value);
+            int fdtGraceTimeBeforeLunchEnd = Convert.ToInt32(nudFdtGraceTimeBeforeLunchEnd.Value);
+            int fdtGraceTimeAfterLunchEnd = Convert.ToInt32(nudFdtGraceTimeBeforeLunchEnd.Value);
+
+            TimeSpan ndtStartTime = this.dtpNdtStart.Value.TimeOfDay;
+            TimeSpan ndtEndTime = this.dtpNdtEnd.Value.TimeOfDay;
+            TimeSpan ndtLunchStartTime = this.dtpNdtLunchStart.Value.TimeOfDay;
+            TimeSpan ndtLunchEndTime = this.dtpNdtLunchEnd.Value.TimeOfDay;
+
+            TimeSpan fdtStartTime = this.dtpFdtStart.Value.TimeOfDay;
+            TimeSpan fdtEndTime = this.dtpFdtEnd.Value.TimeOfDay;
+            TimeSpan fdtLunchStartTime = this.dtpFdtLunchStart.Value.TimeOfDay;
+            TimeSpan fdtLunchEndTime = this.dtpFdtLunchEnd.Value.TimeOfDay;
+
+            TimeSpan ndtWithBeforeGraceTimeStartTime = this.dtpNdtStart.Value.AddMinutes(ndtGraceTimeBeforeStart * -1).TimeOfDay;
+            TimeSpan ndtWithBeforeGraceTimeEndTime = this.dtpNdtEnd.Value.AddMinutes(ndtGraceTimeBeforeEnd * -1).TimeOfDay;
+            TimeSpan ndtWithBeforeGraceTimeLunchStartTime = this.dtpNdtLunchStart.Value.AddMinutes(ndtGraceTimeBeforeLunchStart * -1).TimeOfDay;
+            TimeSpan ndtWithBeforeGraceTimeLunchEndTime = this.dtpNdtLunchEnd.Value.AddMinutes(ndtGraceTimeBeforeLunchEnd * -1).TimeOfDay;
+
+            TimeSpan ndtWithAfterGraceTimeStartTime = this.dtpNdtStart.Value.AddMinutes(ndtGraceTimeAfterStart).TimeOfDay;
+            TimeSpan ndtWithAfterGraceTimeEndTime = this.dtpNdtEnd.Value.AddMinutes(ndtGraceTimeAfterEnd).TimeOfDay;
+            TimeSpan ndtWithAfterGraceTimeLunchStartTime = this.dtpNdtLunchStart.Value.AddMinutes(ndtGraceTimeAfterLunchStart).TimeOfDay;
+            TimeSpan ndtWithAfterGraceTimeLunchEndTime = this.dtpNdtLunchEnd.Value.AddMinutes(ndtGraceTimeAfterLunchEnd).TimeOfDay;
+
+            TimeSpan fdtWithBeforeGraceTimeStartTime = this.dtpFdtStart.Value.AddMinutes(fdtGraceTimeBeforeStart * -1).TimeOfDay;
+            TimeSpan fdtWithBeforeGraceTimeEndTime = this.dtpFdtEnd.Value.AddMinutes(fdtGraceTimeBeforeEnd * -1).TimeOfDay;
+            TimeSpan fdtWithBeforeGraceTimeLunchStartTime = this.dtpFdtLunchStart.Value.AddMinutes(fdtGraceTimeBeforeLunchStart * -1).TimeOfDay;
+            TimeSpan fdtWithBeforeGraceTimeLunchEndTime = this.dtpFdtLunchEnd.Value.AddMinutes(fdtGraceTimeBeforeLunchEnd * -1).TimeOfDay;
+
+            TimeSpan fdtWithAfterGraceTimeStartTime = this.dtpFdtStart.Value.AddMinutes(fdtGraceTimeAfterStart).TimeOfDay;
+            TimeSpan fdtWithAfterGraceTimeEndTime = this.dtpFdtEnd.Value.AddMinutes(fdtGraceTimeAfterEnd).TimeOfDay;
+            TimeSpan fdtWithAfterGraceTimeLunchStartTime = this.dtpFdtLunchStart.Value.AddMinutes(fdtGraceTimeAfterLunchStart).TimeOfDay;
+            TimeSpan fdtWithAfterGraceTimeLunchEndTime = this.dtpFdtLunchEnd.Value.AddMinutes(fdtGraceTimeAfterLunchEnd).TimeOfDay;
 
             string filterByDepartment = this.cbxDepartments.Text.ToLower();
             string filterBySection = this.cbxSections.Text.ToLower();
@@ -56,11 +104,16 @@ namespace AttendanceReport
             string filterByCadre = this.cbxCadre.Text.ToLower();
             string filterByCompany = this.cbxCompany.Text.ToLower();
             string filterByCNIC = this.tbxCnic.Text;
+            string filterByPnumber = this.tbxPNumber.Text;
 
-            Dictionary<string, CardHolderReportInfo> cnicWiseReportInfo = new Dictionary<string, CardHolderReportInfo>();
+            Dictionary<string, CardHolderReportInfo> cnicDateWiseReportInfo = new Dictionary<string, CardHolderReportInfo>();
+            List<string> lstCnics = new List<string>();
+
+
 
             #region Actual Data
 
+            #region Actual Events
             List<CCFTEvent.Event> lstEvents = (from events in EFERTDbUtility.mCCFTEvent.Events
                                                where
                                                    events != null && (events.EventType == 20001 || events.EventType == 20003) &&
@@ -68,7 +121,216 @@ namespace AttendanceReport
                                                    events.OccurrenceTime < toDate
                                                select events).ToList();
 
+            #endregion
 
+            #region Dummy Events
+
+            //List<CCFTEvent.Event> lstEvents = new List<CCFTEvent.Event>() {
+            //     new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,00,41,17,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //       new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,00,41,17,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //    new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,02,44,54,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,02,44,54,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,03,41,17,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //       new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,03,41,17,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //    new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,08,44,54,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,08,44,54,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,43,17,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //      new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,43,17,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //       new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,17,31,57,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //        new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,17,31,57,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,19,43,17,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //      new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,19,43,17,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //       new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,22,31,57,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //        new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,22,31,57,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,23,00,00,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //      new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,23,00,00,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //       new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,17,04,00,00,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //        new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,17,04,00,00,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    }
+            //};
+
+            #endregion
+
+            //MessageBox.Show(this, "Events Found:" + lstEvents.Count);
             List<int> inIds = new List<int>();
             List<int> outIds = new List<int>();
 
@@ -101,7 +363,11 @@ namespace AttendanceReport
                                 {
                                     if (lstChlInEvents[events.OccurrenceTime.Date].ContainsKey(relatedItem.FTItemID))
                                     {
-                                        lstChlInEvents[events.OccurrenceTime.Date][relatedItem.FTItemID].Add(events);
+                                        if (!lstChlInEvents[events.OccurrenceTime.Date][relatedItem.FTItemID].Exists(ev => events.OccurrenceTime.TimeOfDay.Hours == ev.OccurrenceTime.TimeOfDay.Hours && events.OccurrenceTime.TimeOfDay.Minutes == ev.OccurrenceTime.TimeOfDay.Minutes))
+                                        {
+                                            lstChlInEvents[events.OccurrenceTime.Date][relatedItem.FTItemID].Add(events);
+                                        }
+
 
                                     }
                                     else
@@ -118,7 +384,7 @@ namespace AttendanceReport
                                     lstChlInEvents.Add(events.OccurrenceTime.Date, dayWiseEvents);
                                 }
                             }
-                            else if(events.EventType == 20003)//Out events
+                            else if (events.EventType == 20003)//Out events
                             {
                                 outIds.Add(relatedItem.FTItemID);
 
@@ -126,7 +392,10 @@ namespace AttendanceReport
                                 {
                                     if (lstChlOutEvents[events.OccurrenceTime.Date].ContainsKey(relatedItem.FTItemID))
                                     {
-                                        lstChlOutEvents[events.OccurrenceTime.Date][relatedItem.FTItemID].Add(events);
+                                        if (!lstChlOutEvents[events.OccurrenceTime.Date][relatedItem.FTItemID].Exists(ev => events.OccurrenceTime.TimeOfDay.Hours == ev.OccurrenceTime.TimeOfDay.Hours && events.OccurrenceTime.TimeOfDay.Minutes == ev.OccurrenceTime.TimeOfDay.Minutes))
+                                        {
+                                            lstChlOutEvents[events.OccurrenceTime.Date][relatedItem.FTItemID].Add(events);
+                                        }
                                     }
                                     else
                                     {
@@ -141,23 +410,30 @@ namespace AttendanceReport
                                     lstChlOutEvents.Add(events.OccurrenceTime.Date, dayWiseEvents);
                                 }
                             }
-                            
+
                         }
 
                     }
                 }
             }
 
+            //MessageBox.Show(this, "In Events Found Keys: " + lstChlInEvents.Keys.Count + " Values: " + lstChlInEvents.Values.Count);
+            //MessageBox.Show(this, "Out Events Found Keys: " + lstChlOutEvents.Keys.Count + " Values: " + lstChlOutEvents.Values.Count);
+
             inCardHolders = (from chl in EFERTDbUtility.mCCFTCentral.Cardholders
                              where chl != null && inIds.Contains(chl.FTItemID)
                              select chl).Distinct().ToDictionary(ch => ch.FTItemID, ch => ch);
+
+            //MessageBox.Show(this, "In CHls Found Keys: " + inCardHolders.Keys.Count + " Values: " + inCardHolders.Values.Count);
 
             List<string> strLstTempCards = (from chl in inCardHolders
                                             where chl.Value != null && (chl.Value.FirstName.ToLower().StartsWith("t-") || chl.Value.FirstName.ToLower().StartsWith("v-") || chl.Value.FirstName.ToLower().StartsWith("temporary-") || chl.Value.FirstName.ToLower().StartsWith("visitor-"))
                                             select chl.Value.LastName).ToList();
 
+            //MessageBox.Show(this, "Temp Cards found: " + strLstTempCards.Count);
+
             List<CheckInAndOutInfo> filteredCheckIns = (from checkin in EFERTDbUtility.mEFERTDb.CheckedInInfos
-                                                        where checkin != null && !checkin.CheckedIn && checkin.DateTimeIn >= fromDate && checkin.DateTimeIn < toDate &&
+                                                        where checkin != null && checkin.DateTimeIn >= fromDate && checkin.DateTimeIn < toDate &&
                                                             strLstTempCards.Contains(checkin.CardNumber) &&
                                                             (string.IsNullOrEmpty(filterByDepartment) ||
                                                                 ((checkin.CardHolderInfos != null &&
@@ -187,10 +463,13 @@ namespace AttendanceReport
                                                             (string.IsNullOrEmpty(filterByCompany) ||
                                                                 ((checkin.CardHolderInfos != null &&
                                                                 checkin.CardHolderInfos.Company != null &&
+                                                                !string.IsNullOrEmpty(checkin.CardHolderInfos.Company.CompanyName) &&
                                                                 checkin.CardHolderInfos.Company.CompanyName.ToLower() == filterByCompany) ||
                                                                 (checkin.DailyCardHolders != null &&
+                                                                !string.IsNullOrEmpty(checkin.DailyCardHolders.CompanyName) &&
                                                                 checkin.DailyCardHolders.CompanyName.ToLower() == filterByCompany) ||
                                                                 (checkin.Visitors != null &&
+                                                                !string.IsNullOrEmpty(checkin.Visitors.CompanyName) &&
                                                                 checkin.Visitors.CompanyName.ToLower() == filterByCompany))) &&
                                                             (string.IsNullOrEmpty(filterByCNIC) ||
                                                                 ((checkin.CardHolderInfos != null &&
@@ -198,7 +477,10 @@ namespace AttendanceReport
                                                                 (checkin.DailyCardHolders != null &&
                                                                 checkin.DailyCardHolders.CNICNumber == filterByCNIC) ||
                                                                 (checkin.Visitors != null &&
-                                                                checkin.Visitors.CNICNumber == filterByCNIC)))
+                                                                checkin.Visitors.CNICNumber == filterByCNIC))) &&
+                                                            (string.IsNullOrEmpty(filterByPnumber) ||
+                                                                ((checkin.CardHolderInfos != null &&
+                                                                checkin.CardHolderInfos.PNumber == filterByPnumber)))
                                                         select checkin).ToList();
 
 
@@ -206,6 +488,7 @@ namespace AttendanceReport
                               where chl != null && outIds.Contains(chl.FTItemID)
                               select chl).Distinct().ToDictionary(ch => ch.FTItemID, ch => ch);
 
+            //MessageBox.Show(this, "Filtered Checkins: " + filteredCheckIns.Count);
 
             foreach (KeyValuePair<DateTime, Dictionary<int, List<CCFTEvent.Event>>> inEvent in lstChlInEvents)
             {
@@ -231,14 +514,12 @@ namespace AttendanceReport
                         continue;
                     }
 
-                    bool isTempCard = chl.FirstName.ToLower().StartsWith("t-") || chl.FirstName.ToLower().StartsWith("v-") || chl.Value.FirstName.ToLower().StartsWith("temporary-") || chl.Value.FirstName.ToLower().StartsWith("visitor-");
-
-                    List<CCFTEvent.Event> inEvents = chlWiseEvents.Value;
-
-                    inEvents = inEvents.OrderBy(ev => ev.OccurrenceTime).ToList();
+                    bool isTempCard = chl.FirstName.ToLower().StartsWith("t-") || chl.FirstName.ToLower().StartsWith("v-") || chl.FirstName.ToLower().StartsWith("temporary-") || chl.FirstName.ToLower().StartsWith("visitor-");
 
                     if (isTempCard)
                     {
+                        #region TempCard
+
                         string tempCardNumber = chl.LastName;
 
                         List<CheckInAndOutInfo> dateWiseCheckins = (from checkIn in filteredCheckIns
@@ -248,247 +529,1117 @@ namespace AttendanceReport
                         Dictionary<string, DateTime> dictInTime = new Dictionary<string, DateTime>();
                         Dictionary<string, DateTime> dictOutTime = new Dictionary<string, DateTime>();//dateWiseCheckIn.DateTimeOut;
 
-                        Dictionary<string, DateTime> dictCallOutInTime = new Dictionary<string, DateTime>();
-                        Dictionary<string, DateTime> dictCallOutOutTime = new Dictionary<string, DateTime>();
+                        Dictionary<string, DateTime> dictCallOutInTimeAfterEnd = new Dictionary<string, DateTime>();
+                        Dictionary<string, DateTime> dictCallOutInTimeBeforeStart = new Dictionary<string, DateTime>();
+
+                        Dictionary<string, DateTime> dictCallOutOutTimeAfterEnd = new Dictionary<string, DateTime>();
+                        Dictionary<string, DateTime> dictCallOutOutTimeBeforeStart = new Dictionary<string, DateTime>();
+
+
+                        Dictionary<string, DateTime> dictFirstInTimeAfterDayStart = new Dictionary<string, DateTime>();
+                        Dictionary<string, DateTime> dictLastCallOutInTimesBeforeDayStart = new Dictionary<string, DateTime>();
+                        Dictionary<string, DateTime> dictLastCallOutOutTimesBeforeDayStart = new Dictionary<string, DateTime>();
+
+                        Dictionary<string, DateTime> dictLastCallOutInTimesAfterDayEnd = new Dictionary<string, DateTime>();
+                        Dictionary<string, DateTime> dictLastCallOutOutTimesAfterDayEnd = new Dictionary<string, DateTime>();
 
                         foreach (CheckInAndOutInfo dateWiseCheckIn in dateWiseCheckins)
                         {
                             string cnicNumber = dateWiseCheckIn.CNICNumber;
-                            string firstName = dateWiseCheckIn.CardHolderInfos == null ? (dateWiseCheckIn.DailyCardHolders == null ? (dateWiseCheckIn.Visitors == null ? string.Empty : dateWiseCheckIn.Visitors.FirstName) : dateWiseCheckIn.DailyCardHolders.FirstName) : dateWiseCheckIn.CardHolderInfos.FirstName;
-                            string department = dateWiseCheckIn.CardHolderInfos == null ? (dateWiseCheckIn.DailyCardHolders == null ? string.Empty : dateWiseCheckIn.DailyCardHolders.Department) : dateWiseCheckIn.CardHolderInfos.Department?.DepartmentName;
-                            string section = dateWiseCheckIn.CardHolderInfos == null ? (dateWiseCheckIn.DailyCardHolders == null ? string.Empty : dateWiseCheckIn.DailyCardHolders.Section) : dateWiseCheckIn.CardHolderInfos.Section?.SectionName;
-                            string cadre = dateWiseCheckIn.CardHolderInfos == null ? (dateWiseCheckIn.DailyCardHolders == null ? string.Empty : dateWiseCheckIn.DailyCardHolders.Cadre) : dateWiseCheckIn.CardHolderInfos.Cadre?.CadreName;
+                            string firstName = dateWiseCheckIn.CardHolderInfos == null ? (dateWiseCheckIn.DailyCardHolders == null ? (dateWiseCheckIn.Visitors == null ? "Unknown" : dateWiseCheckIn.Visitors.FirstName) : dateWiseCheckIn.DailyCardHolders.FirstName) : dateWiseCheckIn.CardHolderInfos.FirstName;
+
+                            string pNumber = dateWiseCheckIn.CardHolderInfos == null || string.IsNullOrEmpty(dateWiseCheckIn.CardHolderInfos.PNumber) ? "Unknown" : dateWiseCheckIn.CardHolderInfos.PNumber;
+
+                            string department = dateWiseCheckIn.CardHolderInfos == null ? (dateWiseCheckIn.DailyCardHolders == null ? "Unknown" : dateWiseCheckIn.DailyCardHolders.Department) : (dateWiseCheckIn.CardHolderInfos.Department == null ? "Unknown" : dateWiseCheckIn.CardHolderInfos.Department.DepartmentName);
+                            department = string.IsNullOrEmpty(department) ? "Unknown" : department;
+
+                            string section = dateWiseCheckIn.CardHolderInfos == null ? (dateWiseCheckIn.DailyCardHolders == null ? "Unknown" : dateWiseCheckIn.DailyCardHolders.Section) : (dateWiseCheckIn.CardHolderInfos.Section == null ? "Unknown" : dateWiseCheckIn.CardHolderInfos.Section.SectionName);
+                            section = string.IsNullOrEmpty(section) ? "Unknown" : section;
+
+                            string cadre = dateWiseCheckIn.CardHolderInfos == null ? (dateWiseCheckIn.DailyCardHolders == null ? "Unknown" : dateWiseCheckIn.DailyCardHolders.Cadre) : (dateWiseCheckIn.CardHolderInfos.Cadre == null ? "Unknown" : dateWiseCheckIn.CardHolderInfos.Cadre.CadreName);
+                            cadre = string.IsNullOrEmpty(cadre) ? "Unknown" : cadre;
 
 
-                            DateTime inTime = dictInTime.ContainsKey(cnicNumber) ? dictInTime[cnicNumber] : DateTime.MaxValue;
-                            DateTime outTime = dictOutTime.ContainsKey(cnicNumber) ? dictOutTime[cnicNumber] : DateTime.MaxValue;
+                            DateTime minInTime = dictInTime.ContainsKey(cnicNumber) ? dictInTime[cnicNumber] : DateTime.MaxValue;
+                            DateTime maxOutTime = dictOutTime.ContainsKey(cnicNumber) ? dictOutTime[cnicNumber] : DateTime.MaxValue;
 
-                            DateTime callOutInTime = dictCallOutInTime.ContainsKey(cnicNumber) ? dictCallOutInTime[cnicNumber] : DateTime.MaxValue;
-                            DateTime callOutOutTime = dictCallOutOutTime.ContainsKey(cnicNumber) ? dictCallOutOutTime[cnicNumber] : DateTime.MaxValue;
+                            DateTime inDateTime = DateTime.MaxValue;
+                            DateTime outDateTime = DateTime.MaxValue;
+
+                            DateTime minCallOutInTimeAfterEnd = dictCallOutInTimeAfterEnd.ContainsKey(cnicNumber) ? dictCallOutInTimeAfterEnd[cnicNumber] : DateTime.MaxValue;
+                            DateTime minCallOutInTimeBeforeStart = dictCallOutInTimeBeforeStart.ContainsKey(cnicNumber) ? dictCallOutInTimeBeforeStart[cnicNumber] : DateTime.MaxValue;
+
+                            DateTime maxCallOutOutTimeAfterEnd = dictCallOutOutTimeAfterEnd.ContainsKey(cnicNumber) ? dictCallOutOutTimeAfterEnd[cnicNumber] : DateTime.MaxValue;
+                            DateTime maxCallOutOutTimeBeforeStart = dictCallOutOutTimeBeforeStart.ContainsKey(cnicNumber) ? dictCallOutOutTimeBeforeStart[cnicNumber] : DateTime.MaxValue;
+
+                            DateTime callOutInDateTime = DateTime.MaxValue;
+                            DateTime callOutOutDateTime = DateTime.MaxValue;
+
+                            DateTime firstInTimeAfterDayStart = dictFirstInTimeAfterDayStart.ContainsKey(cnicNumber) ? dictFirstInTimeAfterDayStart[cnicNumber] : DateTime.MaxValue;
+                            DateTime lastCallOutInTimesBeforeDayStart = dictLastCallOutInTimesBeforeDayStart.ContainsKey(cnicNumber) ? dictLastCallOutInTimesBeforeDayStart[cnicNumber] : DateTime.MaxValue;
+                            DateTime lastCallOutOutTimesBeforeDayStart = dictLastCallOutOutTimesBeforeDayStart.ContainsKey(cnicNumber) ? dictLastCallOutOutTimesBeforeDayStart[cnicNumber] : DateTime.MaxValue;
+
+                            DateTime lastCallOutInTimesAfterDayEnd = dictLastCallOutInTimesBeforeDayStart.ContainsKey(cnicNumber) ? dictLastCallOutInTimesBeforeDayStart[cnicNumber] : DateTime.MaxValue;
+                            DateTime lastCallOutOutTimesAfterDayEnd = dictLastCallOutOutTimesBeforeDayStart.ContainsKey(cnicNumber) ? dictLastCallOutOutTimesBeforeDayStart[cnicNumber] : DateTime.MaxValue;
 
                             if (date.DayOfWeek == DayOfWeek.Friday)
                             {
-                                if (dateWiseCheckIn.DateTimeIn.TimeOfDay < fdtEnd)
+                                if (dateWiseCheckIn.DateTimeIn.TimeOfDay < fdtWithBeforeGraceTimeStartTime)
                                 {
-                                    if (inTime == DateTime.MaxValue)
+                                    if (lastCallOutInTimesBeforeDayStart == DateTime.MaxValue || lastCallOutInTimesBeforeDayStart.TimeOfDay < dateWiseCheckIn.DateTimeIn.TimeOfDay)
                                     {
-                                        inTime = dateWiseCheckIn.DateTimeIn;
-                                        dictInTime.Add(cnicNumber, inTime);
+                                        lastCallOutInTimesBeforeDayStart = dateWiseCheckIn.DateTimeIn;
+
+                                        if (dictLastCallOutInTimesBeforeDayStart.ContainsKey(cnicNumber))
+                                        {
+                                            dictLastCallOutInTimesBeforeDayStart[cnicNumber] = dateWiseCheckIn.DateTimeIn;
+                                        }
+                                        else
+                                        {
+                                            dictLastCallOutInTimesBeforeDayStart.Add(cnicNumber, dateWiseCheckIn.DateTimeIn);
+                                        }
+
+                                    }
+
+                                    callOutInDateTime = dateWiseCheckIn.DateTimeIn;
+
+                                    if (minCallOutInTimeBeforeStart == DateTime.MaxValue)
+                                    {
+                                        minCallOutInTimeBeforeStart = dateWiseCheckIn.DateTimeIn;
+                                        dictCallOutInTimeBeforeStart.Add(cnicNumber, minInTime);
                                     }
                                     else
                                     {
-                                        if (dateWiseCheckIn.DateTimeIn.TimeOfDay < inTime.TimeOfDay)
+                                        if (dateWiseCheckIn.DateTimeIn.TimeOfDay < minCallOutInTimeBeforeStart.TimeOfDay)
                                         {
-                                            inTime = dateWiseCheckIn.DateTimeIn;
-                                            dictInTime[cnicNumber] = inTime;
-
+                                            minCallOutInTimeBeforeStart = dateWiseCheckIn.DateTimeIn;
+                                            dictCallOutInTimeBeforeStart[cnicNumber] = minInTime;
                                         }
                                     }
-
                                 }
                                 else
                                 {
-                                    if (callOutInTime == DateTime.MaxValue)
+                                    if (dateWiseCheckIn.DateTimeIn.TimeOfDay < fdtWithBeforeGraceTimeEndTime)
                                     {
-                                        callOutInTime = dateWiseCheckIn.DateTimeIn;
-                                        dictCallOutInTime.Add(cnicNumber, inTime);
+                                        if (firstInTimeAfterDayStart == DateTime.MaxValue || firstInTimeAfterDayStart.TimeOfDay > dateWiseCheckIn.DateTimeIn.TimeOfDay)
+                                        {
+                                            firstInTimeAfterDayStart = dateWiseCheckIn.DateTimeIn;
+
+                                            if (dictFirstInTimeAfterDayStart.ContainsKey(cnicNumber))
+                                            {
+                                                dictFirstInTimeAfterDayStart[cnicNumber] = dateWiseCheckIn.DateTimeIn;
+                                            }
+                                            else
+                                            {
+                                                dictFirstInTimeAfterDayStart.Add(cnicNumber, dateWiseCheckIn.DateTimeIn);
+                                            }
+
+                                        }
+
+                                        inDateTime = dateWiseCheckIn.DateTimeIn;
+                                        if (minInTime == DateTime.MaxValue)
+                                        {
+                                            //MessageBox.Show("In Hours set T: " + inTime.ToString());
+                                            minInTime = dateWiseCheckIn.DateTimeIn;
+                                            dictInTime.Add(cnicNumber, minInTime);
+                                        }
+                                        else
+                                        {
+                                            if (dateWiseCheckIn.DateTimeIn.TimeOfDay < minInTime.TimeOfDay)
+                                            {
+                                                //MessageBox.Show("In Hours set T: " + inTime.ToString());
+                                                minInTime = dateWiseCheckIn.DateTimeIn;
+                                                dictInTime[cnicNumber] = minInTime;
+
+                                            }
+                                        }
+
                                     }
                                     else
                                     {
-                                        if (dateWiseCheckIn.DateTimeIn.TimeOfDay < callOutInTime.TimeOfDay)
+                                        callOutInDateTime = dateWiseCheckIn.DateTimeIn;
+                                        minCallOutInTimeAfterEnd = dateWiseCheckIn.DateTimeIn;
+
+                                        if (lastCallOutInTimesAfterDayEnd == DateTime.MaxValue || lastCallOutInTimesAfterDayEnd < callOutInDateTime)
                                         {
-                                            callOutInTime = dateWiseCheckIn.DateTimeIn;
-                                            dictCallOutInTime[cnicNumber] = inTime;
+                                            lastCallOutInTimesAfterDayEnd = callOutInDateTime;
+
+                                            if (dictLastCallOutInTimesAfterDayEnd.ContainsKey(cnicNumber))
+                                            {
+                                                dictLastCallOutInTimesAfterDayEnd[cnicNumber] = callOutInDateTime;
+                                            }
+                                            else
+                                            {
+                                                dictLastCallOutInTimesAfterDayEnd.Add(cnicNumber, callOutInDateTime);
+                                            }
+                                        }
+
+                                        if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                        {
+                                            dictCallOutInTimeAfterEnd.Add(cnicNumber, minInTime);
+                                        }
+                                        else
+                                        {
+                                            if (dateWiseCheckIn.DateTimeIn.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                            {
+                                                dictCallOutInTimeAfterEnd[cnicNumber] = minInTime;
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+                            else
+                            {
+                                if (dateWiseCheckIn.DateTimeIn.TimeOfDay < ndtWithBeforeGraceTimeStartTime)
+                                {
+                                    if (lastCallOutInTimesBeforeDayStart == DateTime.MaxValue || lastCallOutInTimesBeforeDayStart.TimeOfDay < dateWiseCheckIn.DateTimeIn.TimeOfDay)
+                                    {
+                                        lastCallOutInTimesBeforeDayStart = dateWiseCheckIn.DateTimeIn;
+
+                                        if (dictLastCallOutInTimesBeforeDayStart.ContainsKey(cnicNumber))
+                                        {
+                                            dictLastCallOutInTimesBeforeDayStart[cnicNumber] = dateWiseCheckIn.DateTimeIn;
+                                        }
+                                        else
+                                        {
+                                            dictLastCallOutInTimesBeforeDayStart.Add(cnicNumber, dateWiseCheckIn.DateTimeIn);
+                                        }
+
+                                    }
+
+                                    callOutInDateTime = dateWiseCheckIn.DateTimeIn;
+
+                                    if (minCallOutInTimeBeforeStart == DateTime.MaxValue)
+                                    {
+                                        minCallOutInTimeBeforeStart = dateWiseCheckIn.DateTimeIn;
+                                        dictCallOutInTimeBeforeStart.Add(cnicNumber, minInTime);
+                                    }
+                                    else
+                                    {
+                                        if (dateWiseCheckIn.DateTimeIn.TimeOfDay < minCallOutInTimeBeforeStart.TimeOfDay)
+                                        {
+                                            minCallOutInTimeBeforeStart = dateWiseCheckIn.DateTimeIn;
+                                            dictCallOutInTimeBeforeStart[cnicNumber] = minInTime;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (dateWiseCheckIn.DateTimeIn.TimeOfDay < ndtWithBeforeGraceTimeEndTime)
+                                    {
+                                        if (firstInTimeAfterDayStart == DateTime.MaxValue || firstInTimeAfterDayStart.TimeOfDay > dateWiseCheckIn.DateTimeIn.TimeOfDay)
+                                        {
+                                            firstInTimeAfterDayStart = dateWiseCheckIn.DateTimeIn;
+
+                                            if (dictFirstInTimeAfterDayStart.ContainsKey(cnicNumber))
+                                            {
+                                                dictFirstInTimeAfterDayStart[cnicNumber] = dateWiseCheckIn.DateTimeIn;
+                                            }
+                                            else
+                                            {
+                                                dictFirstInTimeAfterDayStart.Add(cnicNumber, dateWiseCheckIn.DateTimeIn);
+                                            }
+
+                                        }
+
+                                        inDateTime = dateWiseCheckIn.DateTimeIn;
+                                        if (minInTime == DateTime.MaxValue)
+                                        {
+                                            //MessageBox.Show("In Hours set T: " + inTime.ToString());
+                                            minInTime = dateWiseCheckIn.DateTimeIn;
+                                            dictInTime.Add(cnicNumber, minInTime);
+                                        }
+                                        else
+                                        {
+                                            if (dateWiseCheckIn.DateTimeIn.TimeOfDay < minInTime.TimeOfDay)
+                                            {
+                                                //MessageBox.Show("In Hours set T: " + inTime.ToString());
+                                                minInTime = dateWiseCheckIn.DateTimeIn;
+                                                dictInTime[cnicNumber] = minInTime;
+
+                                            }
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        callOutInDateTime = dateWiseCheckIn.DateTimeIn;
+
+                                        minCallOutInTimeAfterEnd = dateWiseCheckIn.DateTimeIn;
+
+                                        if (lastCallOutInTimesAfterDayEnd == DateTime.MaxValue || lastCallOutInTimesAfterDayEnd < callOutInDateTime)
+                                        {
+                                            lastCallOutInTimesAfterDayEnd = callOutInDateTime;
+
+                                            if (dictLastCallOutInTimesAfterDayEnd.ContainsKey(cnicNumber))
+                                            {
+                                                dictLastCallOutInTimesAfterDayEnd[cnicNumber] = callOutInDateTime;
+                                            }
+                                            else
+                                            {
+                                                dictLastCallOutInTimesAfterDayEnd.Add(cnicNumber, callOutInDateTime);
+                                            }
+                                        }
+
+                                        if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                        {
+                                            dictCallOutInTimeAfterEnd.Add(cnicNumber, minInTime);
+                                        }
+                                        else
+                                        {
+                                            if (dateWiseCheckIn.DateTimeIn.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                            {
+                                                dictCallOutInTimeAfterEnd[cnicNumber] = minInTime;
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+
+                            if (minInTime == DateTime.MaxValue && minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                            {
+                                continue;
+                            }
+
+                            if (date.DayOfWeek == DayOfWeek.Friday)
+                            {
+                                if (dateWiseCheckIn.DateTimeOut.TimeOfDay < fdtWithAfterGraceTimeStartTime)
+                                {
+                                    if (lastCallOutOutTimesBeforeDayStart == DateTime.MaxValue || lastCallOutOutTimesBeforeDayStart < dateWiseCheckIn.DateTimeOut)
+                                    {
+                                        lastCallOutOutTimesBeforeDayStart = dateWiseCheckIn.DateTimeOut;
+
+                                        if (dictLastCallOutOutTimesBeforeDayStart.ContainsKey(cnicNumber))
+                                        {
+                                            dictLastCallOutOutTimesBeforeDayStart[cnicNumber] = dateWiseCheckIn.DateTimeOut;
+                                        }
+                                        else
+                                        {
+                                            dictLastCallOutOutTimesBeforeDayStart.Add(cnicNumber, dateWiseCheckIn.DateTimeOut);
+                                        }
+                                    }
+
+                                    callOutOutDateTime = dateWiseCheckIn.DateTimeOut;
+
+                                    maxCallOutOutTimeBeforeStart = dateWiseCheckIn.DateTimeOut;
+
+                                    if (dictCallOutOutTimeBeforeStart.ContainsKey(cnicNumber))
+                                    {
+                                        dictCallOutOutTimeBeforeStart[cnicNumber] = maxCallOutOutTimeBeforeStart;
+                                    }
+                                    else
+                                    {
+                                        dictCallOutOutTimeBeforeStart.Add(cnicNumber, maxCallOutOutTimeBeforeStart);
+                                    }
+                                }
+                                else
+                                {
+                                    if (lastCallOutInTimesBeforeDayStart == DateTime.MaxValue)
+                                    {
+                                        if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                        {
+                                            if (dateWiseCheckIn.DateTimeOut.TimeOfDay > minInTime.TimeOfDay)
+                                            {
+                                                outDateTime = dateWiseCheckIn.DateTimeOut;
+                                                maxOutTime = dateWiseCheckIn.DateTimeOut;
+
+                                                if (dictOutTime.ContainsKey(cnicNumber))
+                                                {
+                                                    dictOutTime[cnicNumber] = maxOutTime;
+                                                }
+                                                else
+                                                {
+                                                    dictOutTime.Add(cnicNumber, maxOutTime);
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (dateWiseCheckIn.DateTimeOut.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                            {
+                                                outDateTime = dateWiseCheckIn.DateTimeOut;
+                                                maxOutTime = dateWiseCheckIn.DateTimeOut;
+
+                                                if (dictOutTime.ContainsKey(cnicNumber))
+                                                {
+                                                    dictOutTime[cnicNumber] = maxOutTime;
+                                                }
+                                                else
+                                                {
+                                                    dictOutTime.Add(cnicNumber, maxOutTime);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                callOutOutDateTime = dateWiseCheckIn.DateTimeOut;
+
+                                                maxCallOutOutTimeAfterEnd = dateWiseCheckIn.DateTimeOut;
+
+                                                if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutOutTimesAfterDayEnd < callOutOutDateTime)
+                                                {
+                                                    lastCallOutOutTimesAfterDayEnd = callOutOutDateTime;
+
+                                                    if (dictLastCallOutOutTimesAfterDayEnd.ContainsKey(cnicNumber))
+                                                    {
+                                                        dictLastCallOutOutTimesAfterDayEnd[cnicNumber] = callOutOutDateTime;
+                                                    }
+                                                    else
+                                                    {
+                                                        dictLastCallOutOutTimesAfterDayEnd.Add(cnicNumber, callOutOutDateTime);
+                                                    }
+                                                }
+
+                                                if (dictCallOutOutTimeAfterEnd.ContainsKey(cnicNumber))
+                                                {
+                                                    dictCallOutOutTimeAfterEnd[cnicNumber] = maxCallOutOutTimeAfterEnd;
+                                                }
+                                                else
+                                                {
+                                                    dictCallOutOutTimeAfterEnd.Add(cnicNumber, maxCallOutOutTimeAfterEnd);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (lastCallOutInTimesBeforeDayStart.TimeOfDay > lastCallOutOutTimesBeforeDayStart.TimeOfDay)
+                                        {
+                                            callOutOutDateTime = date.Add(fdtStartDate.TimeOfDay);
+
+                                            maxCallOutOutTimeBeforeStart = date.Add(fdtStartDate.TimeOfDay);
+
+                                            lastCallOutOutTimesBeforeDayStart = date.Add(fdtStartDate.TimeOfDay);
+
+                                            if (dictLastCallOutOutTimesBeforeDayStart.ContainsKey(cnicNumber))
+                                            {
+                                                dictLastCallOutOutTimesBeforeDayStart[cnicNumber] = date.Add(fdtStartDate.TimeOfDay);
+                                            }
+                                            else
+                                            {
+                                                dictLastCallOutOutTimesBeforeDayStart.Add(cnicNumber, date.Add(fdtStartDate.TimeOfDay));
+                                            }
+
+                                            if (dictCallOutOutTimeBeforeStart.ContainsKey(cnicNumber))
+                                            {
+                                                dictCallOutOutTimeBeforeStart[cnicNumber] = date.Add(fdtStartDate.TimeOfDay);
+                                            }
+                                            else
+                                            {
+                                                dictCallOutOutTimeBeforeStart.Add(cnicNumber, date.Add(fdtStartDate.TimeOfDay));
+                                            }
+
+                                            inDateTime = date.Add(fdtStartDate.TimeOfDay);
+
+                                            if (dictInTime.ContainsKey(cnicNumber))
+                                            {
+                                                dictInTime[cnicNumber] = date.Add(fdtStartDate.TimeOfDay);
+                                            }
+                                            else
+                                            {
+                                                dictInTime.Add(cnicNumber, date.Add(fdtStartDate.TimeOfDay));
+                                            }
+
+                                            outDateTime = dateWiseCheckIn.DateTimeOut;
+                                            maxOutTime = dateWiseCheckIn.DateTimeOut;
+
+                                            if (dictOutTime.ContainsKey(cnicNumber))
+                                            {
+                                                dictOutTime[cnicNumber] = maxOutTime;
+                                            }
+                                            else
+                                            {
+                                                dictOutTime.Add(cnicNumber, maxOutTime);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                            {
+                                                if (dateWiseCheckIn.DateTimeOut.TimeOfDay > minInTime.TimeOfDay)
+                                                {
+                                                    outDateTime = dateWiseCheckIn.DateTimeOut;
+                                                    maxOutTime = dateWiseCheckIn.DateTimeOut;
+
+                                                    if (dictOutTime.ContainsKey(cnicNumber))
+                                                    {
+                                                        dictOutTime[cnicNumber] = maxOutTime;
+                                                    }
+                                                    else
+                                                    {
+                                                        dictOutTime.Add(cnicNumber, maxOutTime);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (dateWiseCheckIn.DateTimeOut.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                                {
+                                                    outDateTime = dateWiseCheckIn.DateTimeOut;
+                                                    maxOutTime = dateWiseCheckIn.DateTimeOut;
+
+                                                    if (dictOutTime.ContainsKey(cnicNumber))
+                                                    {
+                                                        dictOutTime[cnicNumber] = maxOutTime;
+                                                    }
+                                                    else
+                                                    {
+                                                        dictOutTime.Add(cnicNumber, maxOutTime);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    callOutOutDateTime = dateWiseCheckIn.DateTimeOut;
+
+                                                    maxCallOutOutTimeAfterEnd = dateWiseCheckIn.DateTimeOut;
+
+                                                    if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutOutTimesAfterDayEnd < callOutOutDateTime)
+                                                    {
+                                                        lastCallOutOutTimesAfterDayEnd = callOutOutDateTime;
+
+                                                        if (dictLastCallOutOutTimesAfterDayEnd.ContainsKey(cnicNumber))
+                                                        {
+                                                            dictLastCallOutOutTimesAfterDayEnd[cnicNumber] = callOutOutDateTime;
+                                                        }
+                                                        else
+                                                        {
+                                                            dictLastCallOutOutTimesAfterDayEnd.Add(cnicNumber, callOutOutDateTime);
+                                                        }
+                                                    }
+
+                                                    if (dictCallOutOutTimeAfterEnd.ContainsKey(cnicNumber))
+                                                    {
+                                                        dictCallOutOutTimeAfterEnd[cnicNumber] = maxCallOutOutTimeAfterEnd;
+                                                    }
+                                                    else
+                                                    {
+                                                        dictCallOutOutTimeAfterEnd.Add(cnicNumber, maxCallOutOutTimeAfterEnd);
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                             else
                             {
-                                if (dateWiseCheckIn.DateTimeIn.TimeOfDay < ndtEnd)
+                                if (dateWiseCheckIn.DateTimeOut.TimeOfDay < ndtWithAfterGraceTimeStartTime)
                                 {
-                                    if (inTime == DateTime.MaxValue)
+                                    if (lastCallOutOutTimesBeforeDayStart == DateTime.MaxValue || lastCallOutOutTimesBeforeDayStart < dateWiseCheckIn.DateTimeOut)
                                     {
-                                        inTime = dateWiseCheckIn.DateTimeIn;
-                                        dictInTime.Add(cnicNumber, inTime);
-                                    }
-                                    else
-                                    {
-                                        if (dateWiseCheckIn.DateTimeIn.TimeOfDay < inTime.TimeOfDay)
-                                        {
-                                            inTime = dateWiseCheckIn.DateTimeIn;
-                                            dictInTime[cnicNumber] = inTime;
+                                        lastCallOutOutTimesBeforeDayStart = dateWiseCheckIn.DateTimeOut;
 
+                                        if (dictLastCallOutOutTimesBeforeDayStart.ContainsKey(cnicNumber))
+                                        {
+                                            dictLastCallOutOutTimesBeforeDayStart[cnicNumber] = dateWiseCheckIn.DateTimeOut;
+                                        }
+                                        else
+                                        {
+                                            dictLastCallOutOutTimesBeforeDayStart.Add(cnicNumber, dateWiseCheckIn.DateTimeOut);
                                         }
                                     }
 
-                                }
-                                else
-                                {
-                                    if (callOutInTime == DateTime.MaxValue)
+                                    callOutOutDateTime = dateWiseCheckIn.DateTimeOut;
+
+                                    maxCallOutOutTimeBeforeStart = dateWiseCheckIn.DateTimeOut;
+
+                                    if (dictCallOutOutTimeBeforeStart.ContainsKey(cnicNumber))
                                     {
-                                        callOutInTime = dateWiseCheckIn.DateTimeIn;
-                                        dictCallOutInTime.Add(cnicNumber, inTime);
+                                        dictCallOutOutTimeBeforeStart[cnicNumber] = maxCallOutOutTimeBeforeStart;
                                     }
                                     else
                                     {
-                                        if (dateWiseCheckIn.DateTimeIn.TimeOfDay < callOutInTime.TimeOfDay)
-                                        {
-                                            callOutInTime = dateWiseCheckIn.DateTimeIn;
-                                            dictCallOutInTime[cnicNumber] = inTime;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (inTime == DateTime.MaxValue && callOutInTime == DateTime.MaxValue)
-                            {
-                                continue;
-                            }
-
-                            if (callOutInTime == DateTime.MaxValue)
-                            {
-                                if (dateWiseCheckIn.DateTimeOut.TimeOfDay > inTime.TimeOfDay)
-                                {
-                                    outTime = dateWiseCheckIn.DateTimeOut;
-
-                                    if (dictOutTime.ContainsKey(cnicNumber))
-                                    {
-                                        dictOutTime[cnicNumber] = outTime;
-                                    }
-                                    else
-                                    {
-                                        dictOutTime.Add(cnicNumber, outTime);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (dateWiseCheckIn.DateTimeOut.TimeOfDay < callOutInTime.TimeOfDay)
-                                {
-                                    outTime = dateWiseCheckIn.DateTimeOut;
-
-                                    if (dictOutTime.ContainsKey(cnicNumber))
-                                    {
-                                        dictOutTime[cnicNumber] = outTime;
-                                    }
-                                    else
-                                    {
-                                        dictOutTime.Add(cnicNumber, outTime);
+                                        dictCallOutOutTimeBeforeStart.Add(cnicNumber, maxCallOutOutTimeBeforeStart);
                                     }
                                 }
                                 else
                                 {
-                                    callOutOutTime = dateWiseCheckIn.DateTimeOut;
-
-                                    if (dictCallOutOutTime.ContainsKey(cnicNumber))
+                                    if (lastCallOutInTimesBeforeDayStart == DateTime.MaxValue)
                                     {
-                                        dictCallOutOutTime[cnicNumber] = callOutOutTime;
+                                        if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                        {
+                                            if (dateWiseCheckIn.DateTimeOut.TimeOfDay > minInTime.TimeOfDay)
+                                            {
+                                                outDateTime = dateWiseCheckIn.DateTimeOut;
+                                                maxOutTime = dateWiseCheckIn.DateTimeOut;
+
+                                                if (dictOutTime.ContainsKey(cnicNumber))
+                                                {
+                                                    dictOutTime[cnicNumber] = maxOutTime;
+                                                }
+                                                else
+                                                {
+                                                    dictOutTime.Add(cnicNumber, maxOutTime);
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (dateWiseCheckIn.DateTimeOut.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                            {
+                                                outDateTime = dateWiseCheckIn.DateTimeOut;
+                                                maxOutTime = dateWiseCheckIn.DateTimeOut;
+
+                                                if (dictOutTime.ContainsKey(cnicNumber))
+                                                {
+                                                    dictOutTime[cnicNumber] = maxOutTime;
+                                                }
+                                                else
+                                                {
+                                                    dictOutTime.Add(cnicNumber, maxOutTime);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                callOutOutDateTime = dateWiseCheckIn.DateTimeOut;
+
+                                                maxCallOutOutTimeAfterEnd = dateWiseCheckIn.DateTimeOut;
+
+                                                if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutOutTimesAfterDayEnd < callOutOutDateTime)
+                                                {
+                                                    lastCallOutOutTimesAfterDayEnd = callOutOutDateTime;
+
+                                                    if (dictLastCallOutOutTimesAfterDayEnd.ContainsKey(cnicNumber))
+                                                    {
+                                                        dictLastCallOutOutTimesAfterDayEnd[cnicNumber] = callOutOutDateTime;
+                                                    }
+                                                    else
+                                                    {
+                                                        dictLastCallOutOutTimesAfterDayEnd.Add(cnicNumber, callOutOutDateTime);
+                                                    }
+                                                }
+
+                                                if (dictCallOutOutTimeAfterEnd.ContainsKey(cnicNumber))
+                                                {
+                                                    dictCallOutOutTimeAfterEnd[cnicNumber] = maxCallOutOutTimeAfterEnd;
+                                                }
+                                                else
+                                                {
+                                                    dictCallOutOutTimeAfterEnd.Add(cnicNumber, maxCallOutOutTimeAfterEnd);
+                                                }
+                                            }
+                                        }
                                     }
                                     else
                                     {
-                                        dictCallOutOutTime.Add(cnicNumber, callOutOutTime);
+                                        if (lastCallOutInTimesBeforeDayStart.TimeOfDay > lastCallOutOutTimesBeforeDayStart.TimeOfDay)
+                                        {
+                                            callOutOutDateTime = date.Add(ndtStartDate.TimeOfDay);
+
+                                            maxCallOutOutTimeBeforeStart = date.Add(ndtStartDate.TimeOfDay);
+
+                                            lastCallOutOutTimesBeforeDayStart = date.Add(ndtStartDate.TimeOfDay);
+
+                                            if (dictLastCallOutOutTimesBeforeDayStart.ContainsKey(cnicNumber))
+                                            {
+                                                dictLastCallOutOutTimesBeforeDayStart[cnicNumber] = date.Add(ndtStartDate.TimeOfDay);
+                                            }
+                                            else
+                                            {
+                                                dictLastCallOutOutTimesBeforeDayStart.Add(cnicNumber, date.Add(ndtStartDate.TimeOfDay));
+                                            }
+
+
+                                            if (dictCallOutOutTimeBeforeStart.ContainsKey(cnicNumber))
+                                            {
+                                                dictCallOutOutTimeBeforeStart[cnicNumber] = date.Add(ndtStartDate.TimeOfDay);
+                                            }
+                                            else
+                                            {
+                                                dictCallOutOutTimeBeforeStart.Add(cnicNumber, date.Add(ndtStartDate.TimeOfDay));
+                                            }
+
+                                            inDateTime = date.Add(ndtStartDate.TimeOfDay);
+
+                                            if (dictInTime.ContainsKey(cnicNumber))
+                                            {
+                                                dictInTime[cnicNumber] = date.Add(ndtStartDate.TimeOfDay);
+                                            }
+                                            else
+                                            {
+                                                dictInTime.Add(cnicNumber, date.Add(ndtStartDate.TimeOfDay));
+                                            }
+
+                                            outDateTime = dateWiseCheckIn.DateTimeOut;
+                                            maxOutTime = dateWiseCheckIn.DateTimeOut;
+
+                                            if (dictOutTime.ContainsKey(cnicNumber))
+                                            {
+                                                dictOutTime[cnicNumber] = maxOutTime;
+                                            }
+                                            else
+                                            {
+                                                dictOutTime.Add(cnicNumber, maxOutTime);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                            {
+                                                if (dateWiseCheckIn.DateTimeOut.TimeOfDay > minInTime.TimeOfDay)
+                                                {
+                                                    outDateTime = dateWiseCheckIn.DateTimeOut;
+                                                    maxOutTime = dateWiseCheckIn.DateTimeOut;
+
+                                                    if (dictOutTime.ContainsKey(cnicNumber))
+                                                    {
+                                                        dictOutTime[cnicNumber] = maxOutTime;
+                                                    }
+                                                    else
+                                                    {
+                                                        dictOutTime.Add(cnicNumber, maxOutTime);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (dateWiseCheckIn.DateTimeOut.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                                {
+                                                    outDateTime = dateWiseCheckIn.DateTimeOut;
+                                                    maxOutTime = dateWiseCheckIn.DateTimeOut;
+
+                                                    if (dictOutTime.ContainsKey(cnicNumber))
+                                                    {
+                                                        dictOutTime[cnicNumber] = maxOutTime;
+                                                    }
+                                                    else
+                                                    {
+                                                        dictOutTime.Add(cnicNumber, maxOutTime);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    callOutOutDateTime = dateWiseCheckIn.DateTimeOut;
+
+                                                    maxCallOutOutTimeAfterEnd = dateWiseCheckIn.DateTimeOut;
+
+                                                    if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutOutTimesAfterDayEnd < callOutOutDateTime)
+                                                    {
+                                                        lastCallOutOutTimesAfterDayEnd = callOutOutDateTime;
+
+                                                        if (dictLastCallOutOutTimesAfterDayEnd.ContainsKey(cnicNumber))
+                                                        {
+                                                            dictLastCallOutOutTimesAfterDayEnd[cnicNumber] = callOutOutDateTime;
+                                                        }
+                                                        else
+                                                        {
+                                                            dictLastCallOutOutTimesAfterDayEnd.Add(cnicNumber, callOutOutDateTime);
+                                                        }
+                                                    }
+
+                                                    if (dictCallOutOutTimeAfterEnd.ContainsKey(cnicNumber))
+                                                    {
+                                                        dictCallOutOutTimeAfterEnd[cnicNumber] = maxCallOutOutTimeAfterEnd;
+                                                    }
+                                                    else
+                                                    {
+                                                        dictCallOutOutTimeAfterEnd.Add(cnicNumber, maxCallOutOutTimeAfterEnd);
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
 
-                            if (outTime == DateTime.MaxValue && callOutOutTime == DateTime.MaxValue)
+                            if (maxOutTime == DateTime.MaxValue && maxCallOutOutTimeAfterEnd == DateTime.MaxValue)
                             {
                                 continue;
                             }
 
-                            if (cnicWiseReportInfo.ContainsKey(cnicNumber + "^" + date.ToString()))
+                            if (cnicDateWiseReportInfo.ContainsKey(cnicNumber + "^" + date.ToString()))
                             {
-                                DateTime prevInTime = cnicWiseReportInfo[cnicNumber].InTime;
-                                DateTime prevOutTime = cnicWiseReportInfo[cnicNumber].OutTime;
+                                DateTime prevInTime = cnicDateWiseReportInfo[cnicNumber + "^" + date.ToString()].MinInTime;
+                                DateTime prevOutTime = cnicDateWiseReportInfo[cnicNumber + "^" + date.ToString()].MaxOutTime;
 
-                                DateTime prevCallOutInTime = cnicWiseReportInfo[cnicNumber].CallOutInTime;
-                                DateTime prevCallOutOutTime = cnicWiseReportInfo[cnicNumber].CallOutOutTime;
+                                DateTime prevCallOutInTime = cnicDateWiseReportInfo[cnicNumber + "^" + date.ToString()].MinCallOutInTime;
+                                DateTime prevCallOutOutTime = cnicDateWiseReportInfo[cnicNumber + "^" + date.ToString()].MaxCallOutOutTime;
 
                                 if (date.DayOfWeek == DayOfWeek.Friday)
                                 {
-                                    if (inTime.TimeOfDay < fdtEnd)
+                                    //if (minInTime.TimeOfDay < fdtEndTime)
+                                    //{
+                                    if (minInTime.TimeOfDay > prevInTime.TimeOfDay)
                                     {
-                                        if (inTime.TimeOfDay > prevOutTime.TimeOfDay)
-                                        {
-                                            inTime = prevInTime;
-                                        }
+                                        //MessageBox.Show("In Hours set: " + inTime.ToString());
+                                        minInTime = prevInTime;
 
-                                        if (outTime.TimeOfDay < prevOutTime.TimeOfDay)
+                                        if (dictInTime.ContainsKey(cnicNumber))
                                         {
-                                            outTime = prevOutTime;
+                                            dictInTime[cnicNumber] = minInTime;
+                                        }
+                                        else
+                                        {
+                                            dictInTime.Add(cnicNumber, minInTime);
+                                        }
+                                    }
+
+                                    if (maxOutTime.TimeOfDay < prevOutTime.TimeOfDay)
+                                    {
+                                        maxOutTime = prevOutTime;
+
+                                        if (dictOutTime.ContainsKey(cnicNumber))
+                                        {
+                                            dictOutTime[cnicNumber] = maxOutTime;
+                                        }
+                                        else
+                                        {
+                                            dictOutTime.Add(cnicNumber, maxOutTime);
+                                        }
+                                    }
+                                    //}
+                                    //else
+                                    //{
+                                    if (prevCallOutInTime.TimeOfDay < fdtWithBeforeGraceTimeStartTime)
+                                    {
+                                        if (minCallOutInTimeBeforeStart.TimeOfDay > prevCallOutInTime.TimeOfDay)
+                                        {
+                                            minCallOutInTimeBeforeStart = prevCallOutInTime;
+
+                                            if (dictCallOutInTimeBeforeStart.ContainsKey(cnicNumber))
+                                            {
+                                                dictCallOutInTimeBeforeStart[cnicNumber] = minCallOutInTimeBeforeStart;
+                                            }
+                                            else
+                                            {
+                                                dictCallOutInTimeBeforeStart.Add(cnicNumber, minCallOutInTimeBeforeStart);
+                                            }
                                         }
                                     }
                                     else
                                     {
-                                        if (inTime.TimeOfDay > prevCallOutOutTime.TimeOfDay)
+                                        if (minCallOutInTimeAfterEnd.TimeOfDay > prevCallOutInTime.TimeOfDay)
                                         {
-                                            callOutInTime = prevCallOutInTime;
-                                        }
+                                            minCallOutInTimeAfterEnd = prevCallOutInTime;
 
-                                        if (callOutOutTime.TimeOfDay < prevCallOutOutTime.TimeOfDay)
-                                        {
-                                            callOutOutTime = prevCallOutOutTime;
+                                            if (dictCallOutInTimeAfterEnd.ContainsKey(cnicNumber))
+                                            {
+                                                dictCallOutInTimeAfterEnd[cnicNumber] = minCallOutInTimeAfterEnd;
+                                            }
+                                            else
+                                            {
+                                                dictCallOutInTimeAfterEnd.Add(cnicNumber, minCallOutInTimeAfterEnd);
+                                            }
                                         }
                                     }
+
+                                    if (prevCallOutOutTime.TimeOfDay < fdtWithAfterGraceTimeStartTime)
+                                    {
+                                        if (maxCallOutOutTimeBeforeStart.TimeOfDay < prevCallOutOutTime.TimeOfDay)
+                                        {
+                                            maxCallOutOutTimeBeforeStart = prevCallOutOutTime;
+
+                                            if (dictCallOutOutTimeBeforeStart.ContainsKey(cnicNumber))
+                                            {
+                                                dictCallOutOutTimeBeforeStart[cnicNumber] = maxCallOutOutTimeBeforeStart;
+                                            }
+                                            else
+                                            {
+                                                dictCallOutOutTimeBeforeStart.Add(cnicNumber, maxCallOutOutTimeBeforeStart);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (maxCallOutOutTimeAfterEnd.TimeOfDay < prevCallOutOutTime.TimeOfDay)
+                                        {
+                                            maxCallOutOutTimeAfterEnd = prevCallOutOutTime;
+
+                                            if (dictCallOutOutTimeAfterEnd.ContainsKey(cnicNumber))
+                                            {
+                                                dictCallOutOutTimeAfterEnd[cnicNumber] = maxCallOutOutTimeAfterEnd;
+                                            }
+                                            else
+                                            {
+                                                dictCallOutOutTimeAfterEnd.Add(cnicNumber, maxCallOutOutTimeAfterEnd);
+                                            }
+                                        }
+                                    }
+
+
+                                    //}
                                 }
                                 else
                                 {
-                                    if (inTime.TimeOfDay < ndtEnd)
+                                    //if (minInTime.TimeOfDay < fdtEndTime)
+                                    //{
+                                    if (minInTime.TimeOfDay > prevInTime.TimeOfDay)
                                     {
-                                        if (inTime.TimeOfDay > prevOutTime.TimeOfDay)
-                                        {
-                                            inTime = prevInTime;
-                                        }
+                                        //MessageBox.Show("In Hours set: " + inTime.ToString());
+                                        minInTime = prevInTime;
 
-                                        if (outTime.TimeOfDay < prevOutTime.TimeOfDay)
+                                        if (dictInTime.ContainsKey(cnicNumber))
                                         {
-                                            outTime = prevOutTime;
+                                            dictInTime[cnicNumber] = minInTime;
+                                        }
+                                        else
+                                        {
+                                            dictInTime.Add(cnicNumber, minInTime);
+                                        }
+                                    }
+
+                                    if (maxOutTime.TimeOfDay < prevOutTime.TimeOfDay)
+                                    {
+                                        maxOutTime = prevOutTime;
+
+                                        if (dictOutTime.ContainsKey(cnicNumber))
+                                        {
+                                            dictOutTime[cnicNumber] = maxOutTime;
+                                        }
+                                        else
+                                        {
+                                            dictOutTime.Add(cnicNumber, maxOutTime);
+                                        }
+                                    }
+                                    //}
+                                    //else
+                                    //{
+                                    if (prevCallOutInTime.TimeOfDay < ndtWithBeforeGraceTimeStartTime)
+                                    {
+                                        if (minCallOutInTimeBeforeStart.TimeOfDay > prevCallOutInTime.TimeOfDay)
+                                        {
+                                            minCallOutInTimeBeforeStart = prevCallOutInTime;
+
+                                            if (dictCallOutInTimeBeforeStart.ContainsKey(cnicNumber))
+                                            {
+                                                dictCallOutInTimeBeforeStart[cnicNumber] = minCallOutInTimeBeforeStart;
+                                            }
+                                            else
+                                            {
+                                                dictCallOutInTimeBeforeStart.Add(cnicNumber, minCallOutInTimeBeforeStart);
+                                            }
                                         }
                                     }
                                     else
                                     {
-                                        if (inTime.TimeOfDay > prevCallOutOutTime.TimeOfDay)
+                                        if (minCallOutInTimeAfterEnd.TimeOfDay > prevCallOutInTime.TimeOfDay)
                                         {
-                                            callOutInTime = prevCallOutInTime;
-                                        }
+                                            minCallOutInTimeAfterEnd = prevCallOutInTime;
 
-                                        if (callOutOutTime.TimeOfDay < prevCallOutOutTime.TimeOfDay)
-                                        {
-                                            callOutOutTime = prevCallOutOutTime;
+                                            if (dictCallOutInTimeAfterEnd.ContainsKey(cnicNumber))
+                                            {
+                                                dictCallOutInTimeAfterEnd[cnicNumber] = minCallOutInTimeAfterEnd;
+                                            }
+                                            else
+                                            {
+                                                dictCallOutInTimeAfterEnd.Add(cnicNumber, minCallOutInTimeAfterEnd);
+                                            }
                                         }
                                     }
+
+                                    if (prevCallOutOutTime.TimeOfDay < ndtWithAfterGraceTimeStartTime)
+                                    {
+                                        if (maxCallOutOutTimeBeforeStart.TimeOfDay < prevCallOutOutTime.TimeOfDay)
+                                        {
+                                            maxCallOutOutTimeBeforeStart = prevCallOutOutTime;
+
+                                            if (dictCallOutOutTimeBeforeStart.ContainsKey(cnicNumber))
+                                            {
+                                                dictCallOutOutTimeBeforeStart[cnicNumber] = maxCallOutOutTimeBeforeStart;
+                                            }
+                                            else
+                                            {
+                                                dictCallOutOutTimeBeforeStart.Add(cnicNumber, maxCallOutOutTimeBeforeStart);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (maxCallOutOutTimeAfterEnd < prevCallOutOutTime)
+                                        {
+                                            maxCallOutOutTimeAfterEnd = prevCallOutOutTime;
+
+                                            if (dictCallOutOutTimeAfterEnd.ContainsKey(cnicNumber))
+                                            {
+                                                dictCallOutOutTimeAfterEnd[cnicNumber] = maxCallOutOutTimeAfterEnd;
+                                            }
+                                            else
+                                            {
+                                                dictCallOutOutTimeAfterEnd.Add(cnicNumber, maxCallOutOutTimeAfterEnd);
+                                            }
+                                        }
+                                    }
+
+
+                                    //}
                                 }
 
                             }
 
+                            //if (lastCallOutInTimesAfterDayEnd != DateTime.MaxValue)
+                            //{
+                            //    if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutInTimesAfterDayEnd > lastCallOutOutTimesAfterDayEnd)
+                            //    {
+                            //        CCFTEvent.Event missingOutEvent = (from events in EFERTDbUtility.mCCFTEvent.Events
+                            //                                           where events != null &&
+                            //                                                 events.EventType == 20003 &&
+                            //                                                 events.RelatedItems != null &&
+                            //                                                     (from relatedItem in events.RelatedItems
+                            //                                                      where relatedItem != null &&
+                            //                                                            relatedItem.RelationCode == 0 &&
+                            //                                                            relatedItem.FTItemID == ftItemId
+                            //                                                      select relatedItem).Any() &&
+                            //                                                 events.OccurrenceTime.Date == date.AddDays(1)
+                            //                                           select events).FirstOrDefault();
+
+                            //        if (missingOutEvent == null)
+                            //        {
+                            //            DateTime callOutDateTime = missingOutEvent.OccurrenceTime.AddHours(0);
+
+                            //            if (date.AddDays(1).DayOfWeek == DayOfWeek.Friday)
+                            //            {
+                            //                if (outDateTime.TimeOfDay < fdtWithBeforeGraceTimeStartTime)
+                            //                {
+                            //                    callOutOutDateTime = callOutDateTime;
+
+                            //                    maxCallOutOutTimeAfterEnd = callOutDateTime;
+
+                            //                    lastCallOutOutTimesAfterDayEnd = callOutOutDateTime;
+
+                            //                    if (dictLastCallOutOutTimesAfterDayEnd.ContainsKey(cnicNumber))
+                            //                    {
+                            //                        dictLastCallOutOutTimesAfterDayEnd[cnicNumber] = callOutOutDateTime;
+                            //                    }
+                            //                    else
+                            //                    {
+                            //                        dictLastCallOutOutTimesAfterDayEnd.Add(cnicNumber, callOutOutDateTime);
+                            //                    }
+
+                            //                    if (dictCallOutOutTimeAfterEnd.ContainsKey(cnicNumber))
+                            //                    {
+                            //                        dictCallOutOutTimeAfterEnd[cnicNumber] = maxCallOutOutTimeAfterEnd;
+                            //                    }
+                            //                    else
+                            //                    {
+                            //                        dictCallOutOutTimeAfterEnd.Add(cnicNumber, maxCallOutOutTimeAfterEnd);
+                            //                    }
+                            //                }
+                            //                else
+                            //                {
+                            //                    callOutOutDateTime = fdtStartDate;
+
+                            //                    maxCallOutOutTimeAfterEnd = fdtStartDate;
+
+                            //                    lastCallOutOutTimesAfterDayEnd = fdtStartDate;
+
+                            //                    if (dictLastCallOutOutTimesAfterDayEnd.ContainsKey(cnicNumber))
+                            //                    {
+                            //                        dictLastCallOutOutTimesAfterDayEnd[cnicNumber] = fdtStartDate;
+                            //                    }
+                            //                    else
+                            //                    {
+                            //                        dictLastCallOutOutTimesAfterDayEnd.Add(cnicNumber, fdtStartDate);
+                            //                    }
+
+                            //                    if (dictCallOutOutTimeAfterEnd.ContainsKey(cnicNumber))
+                            //                    {
+                            //                        dictCallOutOutTimeAfterEnd[cnicNumber] = fdtStartDate;
+                            //                    }
+                            //                    else
+                            //                    {
+                            //                        dictCallOutOutTimeAfterEnd.Add(cnicNumber, fdtStartDate);
+                            //                    }
+                            //                }
+                            //            }
+                            //            else
+                            //            {
+                            //                if (outDateTime.TimeOfDay < fdtWithBeforeGraceTimeStartTime)
+                            //                {
+                            //                    callOutOutDateTime = callOutDateTime;
+
+                            //                    maxCallOutOutTimeAfterEnd = callOutDateTime;
+
+                            //                    lastCallOutOutTimesAfterDayEnd = callOutOutDateTime;
+
+                            //                    if (dictLastCallOutOutTimesAfterDayEnd.ContainsKey(cnicNumber))
+                            //                    {
+                            //                        dictLastCallOutOutTimesAfterDayEnd[cnicNumber] = callOutOutDateTime;
+                            //                    }
+                            //                    else
+                            //                    {
+                            //                        dictLastCallOutOutTimesAfterDayEnd.Add(cnicNumber, callOutOutDateTime);
+                            //                    }
+
+                            //                    if (dictCallOutOutTimeAfterEnd.ContainsKey(cnicNumber))
+                            //                    {
+                            //                        dictCallOutOutTimeAfterEnd[cnicNumber] = maxCallOutOutTimeAfterEnd;
+                            //                    }
+                            //                    else
+                            //                    {
+                            //                        dictCallOutOutTimeAfterEnd.Add(cnicNumber, maxCallOutOutTimeAfterEnd);
+                            //                    }
+                            //                }
+                            //                else
+                            //                {
+                            //                    callOutOutDateTime = ndtStartDate;
+
+                            //                    maxCallOutOutTimeAfterEnd = ndtStartDate;
+
+                            //                    lastCallOutOutTimesAfterDayEnd = ndtStartDate;
+
+                            //                    if (dictLastCallOutOutTimesAfterDayEnd.ContainsKey(cnicNumber))
+                            //                    {
+                            //                        dictLastCallOutOutTimesAfterDayEnd[cnicNumber] = ndtStartDate;
+                            //                    }
+                            //                    else
+                            //                    {
+                            //                        dictLastCallOutOutTimesAfterDayEnd.Add(cnicNumber, ndtStartDate);
+                            //                    }
+
+                            //                    if (dictCallOutOutTimeAfterEnd.ContainsKey(cnicNumber))
+                            //                    {
+                            //                        dictCallOutOutTimeAfterEnd[cnicNumber] = ndtStartDate;
+                            //                    }
+                            //                    else
+                            //                    {
+                            //                        dictCallOutOutTimeAfterEnd.Add(cnicNumber, ndtStartDate);
+                            //                    }
+                            //                }
+                            //            }
+                            //        }
+                            //    }
+                            //}
+
                             int netNormalHours = 0;
+                            int netNormalMinutes = 0;
                             int otHours = 0;
+                            int otMinutes = 0;
                             int callOutHours = 0;
+                            int callOutMinutes = 0;
                             string callOutFromHours = string.Empty;
                             string callOutToHours = string.Empty;
                             int lunchHours = 0;
 
                             if (date.DayOfWeek == DayOfWeek.Friday)
                             {
-                                lunchHours = (fdtLunchStart - fdtLunchEnd).Hours;
+                                lunchHours = (fdtLunchEndTime - fdtLunchStartTime).Hours;
+                                //MessageBox.Show("Lunch Hours: " + lunchHours);
+                                //MessageBox.Show("In Hours: " + inTime.TimeOfDay.ToString());
+                                //MessageBox.Show("Out Hours: " + outTime.TimeOfDay.ToString());
 
-                                if (inTime.TimeOfDay < fdtLunchStart)
+                                if (inDateTime.TimeOfDay < fdtWithBeforeGraceTimeLunchStartTime)
                                 {
-                                    if (outTime.TimeOfDay < fdtLunchEnd)
+
+
+                                    if (outDateTime.TimeOfDay < fdtWithAfterGraceTimeLunchEndTime)
                                     {
-                                        netNormalHours = (fdtLunchStart - inTime.TimeOfDay).Hours;
+                                        netNormalHours = (fdtLunchStartTime - inDateTime.TimeOfDay).Hours;
+                                        netNormalMinutes = (fdtLunchStartTime - inDateTime.TimeOfDay).Minutes;
                                     }
                                     else
                                     {
-                                        if (outTime.TimeOfDay <= fdtEnd)
+                                        if (outDateTime.TimeOfDay <= fdtWithAfterGraceTimeEndTime)
                                         {
-                                            netNormalHours = (outTime.TimeOfDay - inTime.TimeOfDay).Hours - lunchHours;
+                                            netNormalHours = (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Hours - lunchHours;
+                                            netNormalMinutes = (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Minutes;
                                         }
                                         else
                                         {
-                                            netNormalHours = (fdtEnd - inTime.TimeOfDay).Hours - lunchHours;
-                                            otHours = (outTime.TimeOfDay - fdtEnd).Hours;
+                                            netNormalHours = (fdtEndTime - inDateTime.TimeOfDay).Hours - lunchHours;
+                                            netNormalMinutes = (fdtEndTime - inDateTime.TimeOfDay).Minutes;
+                                            otHours = (outDateTime.TimeOfDay - fdtEndTime).Hours;
+                                            otMinutes = (outDateTime.TimeOfDay - fdtEndTime).Minutes;
                                         }
 
                                     }
@@ -496,32 +1647,38 @@ namespace AttendanceReport
                                 }
                                 else
                                 {
-                                    if (inTime.TimeOfDay < fdtLunchEnd)
+                                    if (inDateTime.TimeOfDay < fdtWithBeforeGraceTimeLunchEndTime)
                                     {
-                                        if (outTime.TimeOfDay > fdtLunchEnd)
+                                        if (outDateTime.TimeOfDay > fdtWithBeforeGraceTimeLunchEndTime)
                                         {
-                                            if (outTime.TimeOfDay <= fdtEnd)
+                                            if (outDateTime.TimeOfDay <= fdtWithAfterGraceTimeEndTime)
                                             {
-                                                netNormalHours = (outTime.TimeOfDay - fdtLunchEnd).Hours;
+                                                netNormalHours = (outDateTime.TimeOfDay - fdtLunchEndTime).Hours;
+                                                netNormalMinutes = (outDateTime.TimeOfDay - fdtLunchEndTime).Minutes;
                                             }
                                             else
                                             {
-                                                netNormalHours = (fdtEnd - fdtLunchEnd).Hours - lunchHours;
-                                                otHours = (outTime.TimeOfDay - fdtEnd).Hours;
+                                                netNormalHours = (fdtEndTime - fdtLunchEndTime).Hours;
+                                                netNormalMinutes = (fdtEndTime - fdtLunchEndTime).Minutes;
+                                                otHours = (outDateTime.TimeOfDay - fdtEndTime).Hours;
+                                                otMinutes = (outDateTime.TimeOfDay - fdtEndTime).Minutes;
                                             }
                                         }
 
                                     }
                                     else
                                     {
-                                        if (outTime.TimeOfDay <= fdtEnd)
+                                        if (outDateTime.TimeOfDay <= fdtWithAfterGraceTimeEndTime)
                                         {
-                                            netNormalHours = (outTime.TimeOfDay - inTime.TimeOfDay).Hours;
+                                            netNormalHours = (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Hours;
+                                            netNormalMinutes = (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Minutes;
                                         }
                                         else
                                         {
-                                            netNormalHours = (fdtEnd - inTime.TimeOfDay).Hours - lunchHours;
-                                            otHours = (outTime.TimeOfDay - fdtEnd).Hours;
+                                            netNormalHours = (fdtEndTime - inDateTime.TimeOfDay).Hours;
+                                            netNormalMinutes = (fdtEndTime - inDateTime.TimeOfDay).Minutes;
+                                            otHours = (outDateTime.TimeOfDay - fdtEndTime).Hours;
+                                            otMinutes = (outDateTime.TimeOfDay - fdtEndTime).Minutes;
                                         }
 
                                     }
@@ -529,24 +1686,28 @@ namespace AttendanceReport
                             }
                             else
                             {
-                                lunchHours = (ndtLunchStart - ndtLunchEnd).Hours;
+                                lunchHours = (ndtLunchEndTime - ndtLunchStartTime).Hours;
 
-                                if (inTime.TimeOfDay < ndtLunchStart)
+                                if (inDateTime.TimeOfDay < ndtWithBeforeGraceTimeLunchStartTime)
                                 {
-                                    if (outTime.TimeOfDay < ndtLunchEnd)
+                                    if (outDateTime.TimeOfDay < ndtWithAfterGraceTimeLunchEndTime)
                                     {
-                                        netNormalHours = (ndtLunchStart - inTime.TimeOfDay).Hours;
+                                        netNormalHours = (ndtLunchStartTime - inDateTime.TimeOfDay).Hours;
+                                        netNormalMinutes = (ndtLunchStartTime - inDateTime.TimeOfDay).Minutes;
                                     }
                                     else
                                     {
-                                        if (outTime.TimeOfDay <= ndtEnd)
+                                        if (outDateTime.TimeOfDay <= ndtWithAfterGraceTimeEndTime)
                                         {
-                                            netNormalHours = (outTime.TimeOfDay - inTime.TimeOfDay).Hours - lunchHours;
+                                            netNormalHours = (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Hours - lunchHours;
+                                            netNormalMinutes = (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Minutes;
                                         }
                                         else
                                         {
-                                            netNormalHours = (ndtEnd - inTime.TimeOfDay).Hours - lunchHours;
-                                            otHours = (outTime.TimeOfDay - ndtEnd).Hours;
+                                            netNormalHours = (ndtEndTime - inDateTime.TimeOfDay).Hours - lunchHours;
+                                            netNormalMinutes = (ndtEndTime - inDateTime.TimeOfDay).Minutes;
+                                            otHours = (outDateTime.TimeOfDay - ndtEndTime).Hours;
+                                            otMinutes = (outDateTime.TimeOfDay - ndtEndTime).Minutes;
                                         }
 
                                     }
@@ -554,103 +1715,149 @@ namespace AttendanceReport
                                 }
                                 else
                                 {
-                                    if (inTime.TimeOfDay < ndtLunchEnd)
+                                    if (inDateTime.TimeOfDay < ndtWithBeforeGraceTimeLunchEndTime)
                                     {
-                                        if (outTime.TimeOfDay > ndtLunchEnd)
+                                        if (outDateTime.TimeOfDay > ndtWithBeforeGraceTimeLunchEndTime)
                                         {
-                                            if (outTime.TimeOfDay <= ndtEnd)
+                                            if (outDateTime.TimeOfDay <= ndtWithAfterGraceTimeEndTime)
                                             {
-                                                netNormalHours = (outTime.TimeOfDay - ndtLunchEnd).Hours;
+                                                netNormalHours = (outDateTime.TimeOfDay - ndtLunchEndTime).Hours;
+                                                netNormalMinutes = (outDateTime.TimeOfDay - ndtLunchEndTime).Minutes;
                                             }
                                             else
                                             {
-                                                netNormalHours = (ndtEnd - ndtLunchEnd).Hours - lunchHours;
-                                                otHours = (outTime.TimeOfDay - ndtEnd).Hours;
+                                                netNormalHours = (ndtEndTime - ndtLunchEndTime).Hours;
+                                                netNormalMinutes = (ndtEndTime - ndtLunchEndTime).Minutes;
+                                                otHours = (outDateTime.TimeOfDay - ndtEndTime).Hours;
+                                                otMinutes = (outDateTime.TimeOfDay - ndtEndTime).Minutes;
                                             }
                                         }
 
                                     }
                                     else
                                     {
-                                        if (outTime.TimeOfDay <= ndtEnd)
+                                        if (outDateTime.TimeOfDay <= ndtWithAfterGraceTimeEndTime)
                                         {
-                                            netNormalHours = (outTime.TimeOfDay - inTime.TimeOfDay).Hours;
+                                            netNormalHours = (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Hours;
+                                            netNormalMinutes = (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Minutes;
                                         }
                                         else
                                         {
-                                            netNormalHours = (ndtEnd - inTime.TimeOfDay).Hours - lunchHours;
-                                            otHours = (outTime.TimeOfDay - ndtEnd).Hours;
+                                            netNormalHours = (ndtEndTime - inDateTime.TimeOfDay).Hours;
+                                            netNormalMinutes = (ndtEndTime - inDateTime.TimeOfDay).Minutes;
+                                            otHours = (outDateTime.TimeOfDay - ndtEndTime).Hours;
+                                            otMinutes = (outDateTime.TimeOfDay - ndtEndTime).Minutes;
                                         }
 
                                     }
                                 }
                             }
 
-                            if (callOutInTime != DateTime.MaxValue && callOutOutTime != DateTime.MaxValue)
+                            if (callOutInDateTime != DateTime.MaxValue && callOutOutDateTime != DateTime.MaxValue)
                             {
-                                callOutHours = (callOutOutTime.TimeOfDay - callOutInTime.TimeOfDay).Hours;
-                                callOutFromHours = callOutInTime.ToString("HH:mm");
-                                callOutToHours = callOutOutTime.ToString("HH:mm");
+                                callOutHours = (callOutOutDateTime - callOutInDateTime).Hours;
+                                callOutMinutes = (callOutOutDateTime - callOutInDateTime).Minutes;
                             }
 
-                            if (cnicWiseReportInfo.ContainsKey(cnicNumber + "^" + date.ToString()))
+                            if (minCallOutInTimeBeforeStart != DateTime.MaxValue && maxCallOutOutTimeBeforeStart != DateTime.MaxValue)
                             {
-                                CardHolderReportInfo reportInfo = cnicWiseReportInfo[cnicNumber + "^" + date.ToString()];
+                                callOutFromHours = minCallOutInTimeBeforeStart.ToString("HH:mm");
+                                callOutToHours = maxCallOutOutTimeBeforeStart.ToString("HH:mm");
+                            }
+
+                            if (minCallOutInTimeAfterEnd != DateTime.MaxValue && maxCallOutOutTimeAfterEnd != DateTime.MaxValue)
+                            {
+                                if (minCallOutInTimeBeforeStart == DateTime.MaxValue)
+                                {
+                                    callOutFromHours = minCallOutInTimeAfterEnd.ToString("HH:mm");
+                                }
+
+                                callOutToHours = maxCallOutOutTimeAfterEnd.ToString("HH:mm");
+                            }
+
+                            if (cnicDateWiseReportInfo.ContainsKey(cnicNumber + "^" + date.ToString()))
+                            {
+                                CardHolderReportInfo reportInfo = cnicDateWiseReportInfo[cnicNumber + "^" + date.ToString()];
 
                                 if (reportInfo != null)
                                 {
-                                    if (reportInfo.NetNormalHours < netNormalHours)
-                                    {
-                                        reportInfo.InTime = inTime;
-                                        reportInfo.OutTime = outTime;
+                                    reportInfo.NetNormalHours += netNormalHours;
+                                    reportInfo.NetNormalMinutes += netNormalMinutes;
+                                    reportInfo.OverTimeHours += otHours;
+                                    reportInfo.OverTimeMinutes += otMinutes;
+                                    reportInfo.TotalCallOutHours += callOutHours;
+                                    reportInfo.TotalCallOutMinutes += callOutMinutes;
 
-                                        reportInfo.NetNormalHours = netNormalHours;
+                                    if (minInTime.TimeOfDay < reportInfo.MinInTime.TimeOfDay)
+                                    {
+                                        reportInfo.MinInTime = minInTime;
                                     }
 
-                                    if (reportInfo.OverTimeHours < otHours)
+                                    if (maxOutTime.TimeOfDay > reportInfo.MaxOutTime.TimeOfDay)
                                     {
-                                        reportInfo.InTime = inTime;
-                                        reportInfo.OutTime = outTime;
-
-                                        reportInfo.OverTimeHours = otHours;
+                                        reportInfo.MaxOutTime = maxOutTime;
                                     }
 
-                                    if (reportInfo.TotalCallOutHours < callOutHours)
+                                    if (minCallOutInTimeBeforeStart.TimeOfDay < reportInfo.MinCallOutInTime.TimeOfDay)
                                     {
-                                        reportInfo.CallOutInTime = callOutInTime;
-                                        reportInfo.CallOutOutTime = callOutOutTime;
-
-                                        reportInfo.TotalCallOutHours = callOutHours;
+                                        reportInfo.MinCallOutInTime = minCallOutInTimeBeforeStart;
                                         reportInfo.CallOutFrom = callOutFromHours;
+                                    }
+
+                                    if (minCallOutInTimeAfterEnd.TimeOfDay < reportInfo.MinCallOutInTime.TimeOfDay)
+                                    {
+                                        reportInfo.MinCallOutInTime = minCallOutInTimeAfterEnd;
+                                        reportInfo.CallOutFrom = callOutFromHours;
+                                    }
+
+                                    if (maxCallOutOutTimeAfterEnd.TimeOfDay > reportInfo.MaxCallOutOutTime.TimeOfDay)
+                                    {
+                                        reportInfo.MaxCallOutOutTime = maxCallOutOutTimeAfterEnd;
+                                        reportInfo.CallOutTo = callOutToHours;
+                                    }
+
+                                    if (maxCallOutOutTimeAfterEnd == DateTime.MaxValue || maxCallOutOutTimeBeforeStart.TimeOfDay > reportInfo.MaxCallOutOutTime.TimeOfDay)
+                                    {
+                                        reportInfo.MaxCallOutOutTime = maxCallOutOutTimeBeforeStart;
                                         reportInfo.CallOutTo = callOutToHours;
                                     }
                                 }
                             }
                             else
                             {
-                                cnicWiseReportInfo.Add(cnicNumber + "^" + date.ToString(), new CardHolderReportInfo()
+                                lstCnics.Add(cnicNumber);
+
+                                cnicDateWiseReportInfo.Add(cnicNumber + "^" + date.ToString(), new CardHolderReportInfo()
                                 {
                                     OccurrenceTime = date,
-                                    FirstName = firstName,
+                                    FirstName = chl.FirstName,
+                                    PNumber = pNumber.ToString(),
                                     CNICNumber = cnicNumber,
                                     Department = department,
                                     Section = section,
                                     Cadre = cadre,
                                     NetNormalHours = netNormalHours,
                                     OverTimeHours = otHours,
+                                    TotalCallOutHours = callOutHours,
+                                    NetNormalMinutes = netNormalMinutes,
+                                    OverTimeMinutes = otMinutes,
+                                    TotalCallOutMinutes = callOutMinutes,
                                     CallOutFrom = callOutFromHours,
                                     CallOutTo = callOutToHours,
-                                    TotalCallOutHours = callOutHours,
-                                    InTime = inTime,
-                                    OutTime = outTime,
-                                    CallOutInTime = callOutInTime,
-                                    CallOutOutTime = callOutOutTime
+                                    MinInTime = minInTime,
+                                    MaxOutTime = maxOutTime,
+                                    MinCallOutInTime = minCallOutInTimeAfterEnd < minCallOutInTimeBeforeStart ? minCallOutInTimeAfterEnd : minCallOutInTimeBeforeStart,
+                                    MaxCallOutOutTime = maxCallOutOutTimeAfterEnd == DateTime.MaxValue ? maxCallOutOutTimeBeforeStart : maxCallOutOutTimeAfterEnd
                                 });
                             }
                         }
+
+                        #endregion
                     }
                     else
                     {
+                        #region Events
+
                         if (!lstChlOutEvents.ContainsKey(date) ||
                             lstChlOutEvents[date] == null ||
                             !lstChlOutEvents[date].ContainsKey(ftItemId) ||
@@ -660,16 +1867,21 @@ namespace AttendanceReport
                             continue;
                         }
 
+                        List<CCFTEvent.Event> inEvents = chlWiseEvents.Value;
+
+                        inEvents = inEvents.OrderBy(ev => ev.OccurrenceTime).ToList();
+
                         List<CCFTEvent.Event> outEvents = lstChlOutEvents[date][ftItemId];
 
                         outEvents = outEvents.OrderBy(ev => ev.OccurrenceTime).ToList();
 
                         int pNumber = chl.PersonalDataIntegers == null || chl.PersonalDataIntegers.Count == 0 ? 0 : Convert.ToInt32(chl.PersonalDataIntegers.ElementAt(0).Value);
-                        string cnicNumber = chl.PersonalDataStrings?.ToList()?.Find(pds => pds.PersonalDataFieldID == 5051)?.Value;
-                        string department = chl.PersonalDataStrings?.ToList()?.Find(pds => pds.PersonalDataFieldID == 5043)?.Value;
-                        string section = chl.PersonalDataStrings?.ToList()?.Find(pds => pds.PersonalDataFieldID == 12951)?.Value;
-                        string cadre = chl.PersonalDataStrings?.ToList()?.Find(pds => pds.PersonalDataFieldID == 12952)?.Value;
-                        string company = chl.PersonalDataStrings?.ToList()?.Find(pds => pds.PersonalDataFieldID == 5059)?.Value;
+                        string strPnumber = Convert.ToString(pNumber);
+                        string cnicNumber = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051).Value);
+                        string department = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043).Value);
+                        string section = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951).Value);
+                        string cadre = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952).Value);
+                        string company = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5059) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5059).Value);
 
                         //Filter By Department
                         if (string.IsNullOrEmpty(department) || !string.IsNullOrEmpty(filterByDepartment) && department.ToLower() != filterByDepartment.ToLower())
@@ -684,7 +1896,7 @@ namespace AttendanceReport
                         }
 
                         //Filter By Cadre
-                        if (string.IsNullOrEmpty(cadre) || !string.IsNullOrEmpty(filterByCadre) && section.ToLower() != filterByCadre.ToLower())
+                        if (string.IsNullOrEmpty(cadre) || !string.IsNullOrEmpty(filterByCadre) && cadre.ToLower() != filterByCadre.ToLower())
                         {
                             continue;
                         }
@@ -702,88 +1914,189 @@ namespace AttendanceReport
                         }
 
                         //Filter By Name
-                        if (!string.IsNullOrEmpty(filerByName) && !chl.FirstName.Contains(filerByName))
+                        if (!string.IsNullOrEmpty(filerByName) && !chl.FirstName.ToLower().Contains(filerByName.ToLower()))
                         {
                             continue;
                         }
 
-                        DateTime inTime = DateTime.MaxValue;
-                        DateTime outTime = DateTime.MaxValue;
+                        if (!string.IsNullOrEmpty(filterByPnumber) && strPnumber != filterByPnumber)
+                        {
+                            continue;
+                        }
 
-                        DateTime callOutInTime = DateTime.MaxValue;
-                        DateTime callOutOutTime = DateTime.MaxValue;
+                        DateTime minInTime = DateTime.MaxValue;
+                        DateTime maxOutTime = DateTime.MaxValue;
+
+                        DateTime minCallOutInTimeAfterEnd = DateTime.MaxValue;
+                        DateTime minCallOutInTimeBeforeStart = DateTime.MaxValue;
+
+                        DateTime maxCallOutOutTimeAfterEnd = DateTime.MaxValue;
+                        DateTime maxCallOutOutTimeBeforeStart = DateTime.MaxValue;
+
+                        List<DateTime> inDateTimes = new List<DateTime>();
+                        List<DateTime> outDateTimes = new List<DateTime>();
+
+                        List<DateTime> callOutInDateTimes = new List<DateTime>();
+                        List<DateTime> callOutOutDateTimes = new List<DateTime>();
+
+                        DateTime firstInTimeAfterDayStart = DateTime.MaxValue;
+                        DateTime lastCallOutInTimesBeforeDayStart = DateTime.MaxValue;
+                        DateTime lastCallOutOutTimesBeforeDayStart = DateTime.MaxValue;
+                        DateTime lastCallOutInTimesAfterDayEnd = DateTime.MaxValue;
+                        DateTime lastCallOutOutTimesAfterDayEnd = DateTime.MaxValue;
 
                         foreach (CCFTEvent.Event ev in inEvents)
                         {
                             DateTime inDateTime = ev.OccurrenceTime.AddHours(5);
 
+                            //MessageBox.Show("Event In Time: " + inDateTime.ToString());
+
                             if (date.DayOfWeek == DayOfWeek.Friday)
                             {
-                                if (inDateTime.TimeOfDay < fdtEnd)
+                                if (inDateTime.TimeOfDay < fdtWithBeforeGraceTimeStartTime)
                                 {
-                                    if (inTime == DateTime.MaxValue)
+                                    if (lastCallOutInTimesBeforeDayStart == DateTime.MaxValue || lastCallOutInTimesBeforeDayStart.TimeOfDay < inDateTime.TimeOfDay)
                                     {
-                                        inTime = inDateTime;
+                                        lastCallOutInTimesBeforeDayStart = inDateTime;
+                                    }
+
+                                    callOutInDateTimes.Add(inDateTime);
+
+                                    if (minCallOutInTimeBeforeStart == DateTime.MaxValue)
+                                    {
+                                        minCallOutInTimeBeforeStart = inDateTime;
                                     }
                                     else
                                     {
-                                        if (inDateTime.TimeOfDay < inTime.TimeOfDay)
+                                        if (inDateTime.TimeOfDay < minCallOutInTimeBeforeStart.TimeOfDay)
                                         {
-                                            inTime = inDateTime;
+                                            minCallOutInTimeBeforeStart = inDateTime;
                                         }
                                     }
-
                                 }
                                 else
                                 {
-                                    if (callOutInTime == DateTime.MaxValue)
+                                    if (inDateTime.TimeOfDay < fdtWithBeforeGraceTimeEndTime)
                                     {
-                                        callOutInTime = inDateTime;
+                                        if (firstInTimeAfterDayStart == DateTime.MaxValue || firstInTimeAfterDayStart.TimeOfDay > inDateTime.TimeOfDay)
+                                        {
+                                            firstInTimeAfterDayStart = inDateTime;
+                                        }
+
+                                        inDateTimes.Add(inDateTime);
+
+                                        if (minInTime == DateTime.MaxValue)
+                                        {
+                                            //MessageBox.Show("In Hours set: " + inTime.ToString());
+                                            minInTime = inDateTime;
+                                        }
+                                        else
+                                        {
+                                            if (inDateTime.TimeOfDay < minInTime.TimeOfDay)
+                                            {
+                                                minInTime = inDateTime;
+                                            }
+                                        }
+
                                     }
                                     else
                                     {
-                                        if (inDateTime.TimeOfDay < callOutInTime.TimeOfDay)
+                                        callOutInDateTimes.Add(inDateTime);
+
+                                        if (lastCallOutInTimesAfterDayEnd == DateTime.MaxValue || lastCallOutInTimesAfterDayEnd < inDateTime)
                                         {
-                                            callOutInTime = inDateTime;
+                                            lastCallOutInTimesAfterDayEnd = inDateTime;
+                                        }
+
+                                        if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                        {
+                                            minCallOutInTimeAfterEnd = inDateTime;
+                                        }
+                                        else
+                                        {
+                                            if (inDateTime.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                            {
+                                                minCallOutInTimeAfterEnd = inDateTime;
+                                            }
                                         }
                                     }
                                 }
+
                             }
                             else
                             {
-                                if (inDateTime.TimeOfDay < ndtEnd)
+                                if (inDateTime.TimeOfDay < ndtWithBeforeGraceTimeStartTime)
                                 {
-                                    if (inTime == DateTime.MaxValue)
+                                    if (lastCallOutInTimesBeforeDayStart == DateTime.MaxValue || lastCallOutInTimesBeforeDayStart.TimeOfDay < inDateTime.TimeOfDay)
                                     {
-                                        inTime = inDateTime;
+                                        lastCallOutInTimesBeforeDayStart = inDateTime;
+                                    }
+
+                                    callOutInDateTimes.Add(inDateTime);
+
+                                    if (minCallOutInTimeBeforeStart == DateTime.MaxValue)
+                                    {
+                                        minCallOutInTimeBeforeStart = inDateTime;
                                     }
                                     else
                                     {
-                                        if (inDateTime.TimeOfDay < inTime.TimeOfDay)
+                                        if (inDateTime.TimeOfDay < minCallOutInTimeBeforeStart.TimeOfDay)
                                         {
-                                            inTime = inDateTime;
+                                            minCallOutInTimeBeforeStart = inDateTime;
                                         }
                                     }
-
                                 }
                                 else
                                 {
-                                    if (callOutInTime == DateTime.MaxValue)
+                                    if (inDateTime.TimeOfDay < ndtWithBeforeGraceTimeEndTime)
                                     {
-                                        callOutInTime = inDateTime;
+                                        if (firstInTimeAfterDayStart == DateTime.MaxValue || firstInTimeAfterDayStart.TimeOfDay > inDateTime.TimeOfDay)
+                                        {
+                                            firstInTimeAfterDayStart = inDateTime;
+                                        }
+
+                                        inDateTimes.Add(inDateTime);
+                                        if (minInTime == DateTime.MaxValue)
+                                        {
+                                            //MessageBox.Show("In Hours set: " + inTime.ToString());
+                                            minInTime = inDateTime;
+                                        }
+                                        else
+                                        {
+                                            if (inDateTime.TimeOfDay < minInTime.TimeOfDay)
+                                            {
+                                                //MessageBox.Show("In Hours set: " + inTime.ToString());
+                                                minInTime = inDateTime;
+                                            }
+                                        }
+
                                     }
                                     else
                                     {
-                                        if (inDateTime.TimeOfDay < callOutInTime.TimeOfDay)
+                                        callOutInDateTimes.Add(inDateTime);
+
+                                        if (lastCallOutInTimesAfterDayEnd == DateTime.MaxValue || lastCallOutInTimesAfterDayEnd < inDateTime)
                                         {
-                                            callOutInTime = inDateTime;
+                                            lastCallOutInTimesAfterDayEnd = inDateTime;
+                                        }
+
+                                        if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                        {
+                                            minCallOutInTimeAfterEnd = inDateTime;
+                                        }
+                                        else
+                                        {
+                                            if (inDateTime.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                            {
+                                                minCallOutInTimeAfterEnd = inDateTime;
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
 
-                        if (inTime == DateTime.MaxValue && callOutInTime == DateTime.MaxValue)
+                        if (minInTime == DateTime.MaxValue && minCallOutInTimeAfterEnd == DateTime.MaxValue)
                         {
                             continue;
                         }
@@ -792,425 +2105,1018 @@ namespace AttendanceReport
                         {
                             DateTime outDateTime = ev.OccurrenceTime.AddHours(5);
 
-                            if (callOutInTime == DateTime.MaxValue)
+                            if (date.DayOfWeek == DayOfWeek.Friday)
                             {
-                                if (outDateTime.TimeOfDay > inTime.TimeOfDay)
+                                if (outDateTime.TimeOfDay < fdtWithAfterGraceTimeStartTime)
                                 {
-                                    outTime = outDateTime;
-                                }
+                                    if (lastCallOutOutTimesBeforeDayStart == DateTime.MaxValue || lastCallOutOutTimesBeforeDayStart < outDateTime)
+                                    {
+                                        lastCallOutOutTimesBeforeDayStart = outDateTime;
+                                    }
 
-                            }
-                            else
-                            {
-                                if (outDateTime.TimeOfDay < callOutInTime.TimeOfDay)
-                                {
-                                    outTime = outDateTime;
+                                    callOutOutDateTimes.Add(outDateTime);
+
+                                    maxCallOutOutTimeBeforeStart = outDateTime;
                                 }
                                 else
                                 {
-                                    callOutOutTime = outDateTime;
+                                    if (lastCallOutInTimesBeforeDayStart == DateTime.MaxValue)
+                                    {
+                                        if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                        {
+                                            outDateTimes.Add(outDateTime);
+                                            if (maxOutTime == DateTime.MaxValue || outDateTime.TimeOfDay > maxOutTime.TimeOfDay)
+                                            {
+                                                maxOutTime = outDateTime;
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            if (outDateTime.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                            {
+                                                outDateTimes.Add(outDateTime);
+                                                maxOutTime = outDateTime;
+                                            }
+                                            else
+                                            {
+                                                callOutOutDateTimes.Add(outDateTime);
+
+                                                if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutOutTimesAfterDayEnd < outDateTime)
+                                                {
+                                                    lastCallOutOutTimesAfterDayEnd = outDateTime;
+                                                }
+
+                                                maxCallOutOutTimeAfterEnd = outDateTime;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (lastCallOutInTimesBeforeDayStart.TimeOfDay > lastCallOutOutTimesBeforeDayStart.TimeOfDay)
+                                        {
+                                            callOutOutDateTimes.Add(date.Add(fdtStartDate.TimeOfDay));
+                                            maxCallOutOutTimeBeforeStart = date.Add(fdtStartDate.TimeOfDay);
+                                            lastCallOutOutTimesBeforeDayStart = date.Add(fdtStartDate.TimeOfDay);
+
+                                            inDateTimes.Add(date.Add(fdtStartDate.TimeOfDay));
+                                            minInTime = date.Add(fdtStartDate.TimeOfDay);
+
+                                            outDateTimes.Add(outDateTime);
+                                            maxOutTime = outDateTime;
+                                        }
+                                        else
+                                        {
+                                            if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                            {
+                                                outDateTimes.Add(outDateTime);
+                                                if (maxOutTime == DateTime.MaxValue || outDateTime.TimeOfDay > maxOutTime.TimeOfDay)
+                                                {
+                                                    maxOutTime = outDateTime;
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                if (outDateTime.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                                {
+                                                    outDateTimes.Add(outDateTime);
+                                                    maxOutTime = outDateTime;
+                                                }
+                                                else
+                                                {
+                                                    callOutOutDateTimes.Add(outDateTime);
+
+                                                    if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutOutTimesAfterDayEnd < outDateTime)
+                                                    {
+                                                        lastCallOutOutTimesAfterDayEnd = outDateTime;
+                                                    }
+
+                                                    maxCallOutOutTimeAfterEnd = outDateTime;
+                                                }
+                                            }
+                                        }
+                                    }
+
                                 }
                             }
+                            else
+                            {
+                                if (outDateTime.TimeOfDay < ndtWithAfterGraceTimeStartTime)
+                                {
+                                    if (lastCallOutOutTimesBeforeDayStart == DateTime.MaxValue || lastCallOutOutTimesBeforeDayStart < outDateTime)
+                                    {
+                                        lastCallOutOutTimesBeforeDayStart = outDateTime;
+                                    }
 
+                                    callOutOutDateTimes.Add(outDateTime);
+                                    maxCallOutOutTimeBeforeStart = outDateTime;
+                                }
+                                else
+                                {
+                                    if (lastCallOutInTimesBeforeDayStart == DateTime.MaxValue)
+                                    {
+                                        if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                        {
+                                            outDateTimes.Add(outDateTime);
+                                            if (maxOutTime == DateTime.MaxValue || outDateTime.TimeOfDay > maxOutTime.TimeOfDay)
+                                            {
+                                                maxOutTime = outDateTime;
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            if (outDateTime.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                            {
+                                                outDateTimes.Add(outDateTime);
+                                                maxOutTime = outDateTime;
+                                            }
+                                            else
+                                            {
+                                                callOutOutDateTimes.Add(outDateTime);
+
+                                                if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutOutTimesAfterDayEnd < outDateTime)
+                                                {
+                                                    lastCallOutOutTimesAfterDayEnd = outDateTime;
+                                                }
+
+                                                maxCallOutOutTimeAfterEnd = outDateTime;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (lastCallOutInTimesBeforeDayStart.TimeOfDay > lastCallOutOutTimesBeforeDayStart.TimeOfDay)
+                                        {
+                                            callOutOutDateTimes.Add(date.Add(ndtStartDate.TimeOfDay));
+                                            maxCallOutOutTimeBeforeStart = date.Add(ndtStartDate.TimeOfDay);
+                                            lastCallOutOutTimesBeforeDayStart = date.Add(ndtStartDate.TimeOfDay);
+
+                                            inDateTimes.Add(date.Add(ndtStartDate.TimeOfDay));
+                                            minInTime = date.Add(ndtStartDate.TimeOfDay);
+
+                                            outDateTimes.Add(outDateTime);
+                                            maxOutTime = outDateTime;
+                                        }
+                                        else
+                                        {
+                                            if (minCallOutInTimeAfterEnd == DateTime.MaxValue)
+                                            {
+                                                outDateTimes.Add(outDateTime);
+
+                                                if (maxOutTime == DateTime.MaxValue || outDateTime.TimeOfDay > maxOutTime.TimeOfDay)
+                                                {
+                                                    maxOutTime = outDateTime;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (outDateTime.TimeOfDay < minCallOutInTimeAfterEnd.TimeOfDay)
+                                                {
+                                                    outDateTimes.Add(outDateTime);
+                                                    maxOutTime = outDateTime;
+                                                }
+                                                else
+                                                {
+                                                    callOutOutDateTimes.Add(outDateTime);
+
+                                                    if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutOutTimesAfterDayEnd < outDateTime)
+                                                    {
+                                                        lastCallOutOutTimesAfterDayEnd = outDateTime;
+                                                    }
+
+                                                    maxCallOutOutTimeAfterEnd = outDateTime;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
 
-                        if (outTime == DateTime.MaxValue && callOutOutTime == DateTime.MaxValue)
+                        if (maxOutTime == DateTime.MaxValue && maxCallOutOutTimeAfterEnd == DateTime.MaxValue)
                         {
                             continue;
                         }
 
-                        if (cnicWiseReportInfo.ContainsKey(cnicNumber + "^" + date.ToString()))
+                        if (lastCallOutInTimesAfterDayEnd != DateTime.MaxValue)
                         {
-                            DateTime prevInTime = cnicWiseReportInfo[cnicNumber].InTime;
-                            DateTime prevOutTime = cnicWiseReportInfo[cnicNumber].OutTime;
-
-                            DateTime prevCallOutInTime = cnicWiseReportInfo[cnicNumber].CallOutInTime;
-                            DateTime prevCallOutOutTime = cnicWiseReportInfo[cnicNumber].CallOutOutTime;
-
-                            if (date.DayOfWeek == DayOfWeek.Friday)
+                            if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutInTimesAfterDayEnd > lastCallOutOutTimesAfterDayEnd)
                             {
-                                if (inTime.TimeOfDay < fdtEnd)
-                                {
-                                    if (inTime.TimeOfDay > prevOutTime.TimeOfDay)
-                                    {
-                                        inTime = prevInTime;
-                                    }
+                                CCFTEvent.Event missingOutEvent = (from events in lstEvents
+                                                                   where events != null &&
+                                                                         events.EventType == 20003 &&
+                                                                         events.RelatedItems != null &&
+                                                                             (from relatedItem in events.RelatedItems
+                                                                              where relatedItem != null &&
+                                                                                    relatedItem.RelationCode == 0 &&
+                                                                                    relatedItem.FTItemID == ftItemId
+                                                                              select relatedItem).Any() &&
+                                                                         events.OccurrenceTime.Date == date.AddDays(1)
+                                                                   select events).FirstOrDefault();
 
-                                    if (outTime.TimeOfDay < prevOutTime.TimeOfDay)
-                                    {
-                                        outTime = prevOutTime;
-                                    }
-                                }
-                                else
-                                {
-                                    if (inTime.TimeOfDay > prevCallOutOutTime.TimeOfDay)
-                                    {
-                                        callOutInTime = prevCallOutInTime;
-                                    }
+                                //CCFTEvent.Event missingOutEvent = (from events in EFERTDbUtility.mCCFTEvent.Events
+                                //                                   where events != null &&
+                                //                                         events.EventType == 20003 &&
+                                //                                         events.RelatedItems != null &&
+                                //                                             (from relatedItem in events.RelatedItems
+                                //                                              where relatedItem != null &&
+                                //                                                    relatedItem.RelationCode == 0 &&
+                                //                                                    relatedItem.FTItemID == ftItemId
+                                //                                              select relatedItem).Any() &&
+                                //                                         events.OccurrenceTime.Date == date.AddDays(1)
+                                //                                   select events).FirstOrDefault();
 
-                                    if (callOutOutTime.TimeOfDay < prevCallOutOutTime.TimeOfDay)
+                                if (missingOutEvent != null)
+                                {
+                                    DateTime outDateTime = missingOutEvent.OccurrenceTime.AddHours(5);
+
+                                    if (date.AddDays(1).DayOfWeek == DayOfWeek.Friday)
                                     {
-                                        callOutOutTime = prevCallOutOutTime;
+                                        if (outDateTime.TimeOfDay < fdtWithBeforeGraceTimeStartTime)
+                                        {
+                                            callOutOutDateTimes.Add(outDateTime);
+
+                                            if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutOutTimesAfterDayEnd < outDateTime)
+                                            {
+                                                lastCallOutOutTimesAfterDayEnd = outDateTime;
+                                            }
+
+                                            maxCallOutOutTimeAfterEnd = outDateTime;
+                                        }
+                                        else
+                                        {
+                                            callOutOutDateTimes.Add(date.Add(fdtStartDate.TimeOfDay));
+
+                                            lastCallOutOutTimesAfterDayEnd = date.Add(fdtStartDate.TimeOfDay);
+
+                                            maxCallOutOutTimeAfterEnd = date.Add(fdtStartDate.TimeOfDay);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (outDateTime.TimeOfDay < fdtWithBeforeGraceTimeStartTime)
+                                        {
+                                            callOutOutDateTimes.Add(outDateTime);
+
+                                            if (lastCallOutOutTimesAfterDayEnd == DateTime.MaxValue || lastCallOutOutTimesAfterDayEnd < outDateTime)
+                                            {
+                                                lastCallOutOutTimesAfterDayEnd = outDateTime;
+                                            }
+
+                                            maxCallOutOutTimeAfterEnd = outDateTime;
+                                        }
+                                        else
+                                        {
+                                            callOutOutDateTimes.Add(date.Add(ndtStartDate.TimeOfDay));
+
+                                            lastCallOutOutTimesAfterDayEnd = date.Add(ndtStartDate.TimeOfDay);
+
+                                            maxCallOutOutTimeAfterEnd = date.Add(ndtStartDate.TimeOfDay);
+                                        }
                                     }
                                 }
                             }
-                            else
-                            {
-                                if (inTime.TimeOfDay < ndtEnd)
-                                {
-                                    if (inTime.TimeOfDay > prevOutTime.TimeOfDay)
-                                    {
-                                        inTime = prevInTime;
-                                    }
+                        }
 
-                                    if (outTime.TimeOfDay < prevOutTime.TimeOfDay)
+
+                        if (cnicDateWiseReportInfo.ContainsKey(cnicNumber + "^" + date.ToString()))
+                        {
+                            DateTime prevInTime = cnicDateWiseReportInfo[cnicNumber + "^" + date.ToString()].MinInTime;
+                            DateTime prevOutTime = cnicDateWiseReportInfo[cnicNumber + "^" + date.ToString()].MaxOutTime;
+
+                            DateTime prevCallOutInTime = cnicDateWiseReportInfo[cnicNumber + "^" + date.ToString()].MinCallOutInTime;
+                            DateTime prevCallOutOutTime = cnicDateWiseReportInfo[cnicNumber + "^" + date.ToString()].MaxCallOutOutTime;
+
+                            if (date.DayOfWeek == DayOfWeek.Friday)
+                            {
+                                //if (minInTime.TimeOfDay < fdtEndTime)
+                                //{
+                                if (minInTime.TimeOfDay > prevInTime.TimeOfDay)
+                                {
+                                    //MessageBox.Show("In Hours set: " + inTime.ToString());
+                                    minInTime = prevInTime;
+                                }
+
+                                if (maxOutTime.TimeOfDay < prevOutTime.TimeOfDay)
+                                {
+                                    maxOutTime = prevOutTime;
+                                }
+                                //}
+                                //else
+                                //{
+                                if (prevCallOutInTime.TimeOfDay < fdtWithBeforeGraceTimeStartTime)
+                                {
+                                    if (minCallOutInTimeBeforeStart.TimeOfDay > prevCallOutInTime.TimeOfDay)
                                     {
-                                        outTime = prevOutTime;
+                                        minCallOutInTimeAfterEnd = prevCallOutInTime;
                                     }
                                 }
                                 else
                                 {
-                                    if (inTime.TimeOfDay > prevCallOutOutTime.TimeOfDay)
+                                    if (minCallOutInTimeAfterEnd.TimeOfDay > prevCallOutInTime.TimeOfDay)
                                     {
-                                        callOutInTime = prevCallOutInTime;
-                                    }
-
-                                    if (callOutOutTime.TimeOfDay < prevCallOutOutTime.TimeOfDay)
-                                    {
-                                        callOutOutTime = prevCallOutOutTime;
+                                        minCallOutInTimeAfterEnd = prevCallOutInTime;
                                     }
                                 }
+
+                                if (prevCallOutOutTime.TimeOfDay < fdtWithAfterGraceTimeStartTime)
+                                {
+                                    if (maxCallOutOutTimeBeforeStart.TimeOfDay < prevCallOutOutTime.TimeOfDay)
+                                    {
+                                        maxCallOutOutTimeBeforeStart = prevCallOutOutTime;
+                                    }
+                                }
+                                else
+                                {
+                                    if (maxCallOutOutTimeAfterEnd < prevCallOutOutTime)
+                                    {
+                                        maxCallOutOutTimeAfterEnd = prevCallOutOutTime;
+                                    }
+                                }
+
+
+                                //}
+                            }
+                            else
+                            {
+                                //if (minInTime.TimeOfDay < fdtEndTime)
+                                //{
+                                if (minInTime.TimeOfDay > prevInTime.TimeOfDay)
+                                {
+                                    //MessageBox.Show("In Hours set: " + inTime.ToString());
+                                    minInTime = prevInTime;
+                                }
+
+                                if (maxOutTime.TimeOfDay < prevOutTime.TimeOfDay)
+                                {
+                                    maxOutTime = prevOutTime;
+                                }
+                                //}
+                                //else
+                                //{
+                                if (prevCallOutInTime.TimeOfDay < ndtWithBeforeGraceTimeStartTime)
+                                {
+                                    if (minCallOutInTimeBeforeStart.TimeOfDay > prevCallOutInTime.TimeOfDay)
+                                    {
+                                        minCallOutInTimeAfterEnd = prevCallOutInTime;
+                                    }
+                                }
+                                else
+                                {
+                                    if (minCallOutInTimeAfterEnd.TimeOfDay > prevCallOutInTime.TimeOfDay)
+                                    {
+                                        minCallOutInTimeAfterEnd = prevCallOutInTime;
+                                    }
+                                }
+
+                                if (prevCallOutOutTime.TimeOfDay < ndtWithAfterGraceTimeStartTime)
+                                {
+                                    if (maxCallOutOutTimeBeforeStart.TimeOfDay < prevCallOutOutTime.TimeOfDay)
+                                    {
+                                        maxCallOutOutTimeBeforeStart = prevCallOutOutTime;
+                                    }
+                                }
+                                else
+                                {
+                                    if (maxCallOutOutTimeAfterEnd < prevCallOutOutTime)
+                                    {
+                                        maxCallOutOutTimeAfterEnd = prevCallOutOutTime;
+                                    }
+                                }
+
+
+                                //}
                             }
 
                         }
 
                         int netNormalHours = 0;
+                        int netNormalMinutes = 0;
                         int otHours = 0;
+                        int otMinutes = 0;
                         int callOutHours = 0;
+                        int callOutMinutes = 0;
                         string callOutFromHours = string.Empty;
                         string callOutToHours = string.Empty;
                         int lunchHours = 0;
 
-                        if (date.DayOfWeek == DayOfWeek.Friday)
-                        {
-                            lunchHours = (fdtLunchStart - fdtLunchEnd).Hours;
+                        inDateTimes.OrderBy((a) => a.TimeOfDay);
+                        outDateTimes.OrderBy((a) => a.TimeOfDay);
 
-                            if (inTime.TimeOfDay < fdtLunchStart)
+                        foreach (DateTime inDateTime in inDateTimes)
+                        {
+                            //MessageBox.Show(this, "In Time: " + inDateTime.ToString());
+                            DateTime outDateTime = DateTime.MaxValue;
+
+                            //finding nearest out time wrt in time.
+                            foreach (DateTime oDateTime in outDateTimes)
                             {
-                                if (outTime.TimeOfDay < fdtLunchEnd)
+                                if (oDateTime.TimeOfDay < inDateTime.TimeOfDay)
                                 {
-                                    netNormalHours = (fdtLunchStart - inTime.TimeOfDay).Hours;
+                                    continue;
                                 }
                                 else
                                 {
-                                    if (outTime.TimeOfDay <= fdtEnd)
+                                    if (oDateTime.TimeOfDay < outDateTime.TimeOfDay)
                                     {
-                                        netNormalHours = (outTime.TimeOfDay - inTime.TimeOfDay).Hours - lunchHours;
+                                        outDateTime = oDateTime;
+                                    }
+                                }
+                            }
+
+                            //MessageBox.Show(this, "Out Time: " + outDateTime.ToString());
+
+                            if (date.DayOfWeek == DayOfWeek.Friday)
+                            {
+                                lunchHours = (fdtLunchEndTime - fdtLunchStartTime).Hours;
+                                //MessageBox.Show("Lunch Hours: " + lunchHours);
+                                //MessageBox.Show("In Hours: " + inTime.ToString());
+                                //MessageBox.Show("Out Hours: " + outTime.ToString());
+
+                                if (inDateTime.TimeOfDay < fdtWithBeforeGraceTimeLunchStartTime)
+                                {
+                                    if (outDateTime.TimeOfDay < fdtWithAfterGraceTimeLunchEndTime)
+                                    {
+                                        netNormalHours += (fdtLunchStartTime - inDateTime.TimeOfDay).Hours;
+                                        netNormalMinutes += (fdtLunchStartTime - inDateTime.TimeOfDay).Minutes;
                                     }
                                     else
                                     {
-                                        netNormalHours = (fdtEnd - inTime.TimeOfDay).Hours - lunchHours;
-                                        otHours = (outTime.TimeOfDay - fdtEnd).Hours;
-                                    }
-
-                                }
-
-                            }
-                            else
-                            {
-                                if (inTime.TimeOfDay < fdtLunchEnd)
-                                {
-                                    if (outTime.TimeOfDay > fdtLunchEnd)
-                                    {
-                                        if (outTime.TimeOfDay <= fdtEnd)
+                                        if (outDateTime.TimeOfDay <= fdtWithAfterGraceTimeEndTime)
                                         {
-                                            netNormalHours = (outTime.TimeOfDay - fdtLunchEnd).Hours;
+                                            netNormalHours += (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Hours - lunchHours;
+                                            netNormalMinutes += (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Minutes;
                                         }
                                         else
                                         {
-                                            netNormalHours = (fdtEnd - fdtLunchEnd).Hours - lunchHours;
-                                            otHours = (outTime.TimeOfDay - fdtEnd).Hours;
+                                            netNormalHours += (fdtEndTime - inDateTime.TimeOfDay).Hours - lunchHours;
+                                            netNormalMinutes += (fdtEndTime - inDateTime.TimeOfDay).Minutes;
+                                            otHours += (outDateTime.TimeOfDay - fdtEndTime).Hours;
+                                            otMinutes += (outDateTime.TimeOfDay - fdtEndTime).Minutes;
                                         }
+
                                     }
 
                                 }
                                 else
                                 {
-                                    if (outTime.TimeOfDay <= fdtEnd)
+                                    if (inDateTime.TimeOfDay < fdtWithBeforeGraceTimeLunchEndTime)
                                     {
-                                        netNormalHours = (outTime.TimeOfDay - inTime.TimeOfDay).Hours;
-                                    }
-                                    else
-                                    {
-                                        netNormalHours = (fdtEnd - inTime.TimeOfDay).Hours - lunchHours;
-                                        otHours = (outTime.TimeOfDay - fdtEnd).Hours;
-                                    }
-
-                                }
-                            }
-                        }
-                        else
-                        {
-                            lunchHours = (ndtLunchStart - ndtLunchEnd).Hours;
-
-                            if (inTime.TimeOfDay < ndtLunchStart)
-                            {
-                                if (outTime.TimeOfDay < ndtLunchEnd)
-                                {
-                                    netNormalHours = (ndtLunchStart - inTime.TimeOfDay).Hours;
-                                }
-                                else
-                                {
-                                    if (outTime.TimeOfDay <= ndtEnd)
-                                    {
-                                        netNormalHours = (outTime.TimeOfDay - inTime.TimeOfDay).Hours - lunchHours;
-                                    }
-                                    else
-                                    {
-                                        netNormalHours = (ndtEnd - inTime.TimeOfDay).Hours - lunchHours;
-                                        otHours = (outTime.TimeOfDay - ndtEnd).Hours;
-                                    }
-
-                                }
-
-                            }
-                            else
-                            {
-                                if (inTime.TimeOfDay < ndtLunchEnd)
-                                {
-                                    if (outTime.TimeOfDay > ndtLunchEnd)
-                                    {
-                                        if (outTime.TimeOfDay <= ndtEnd)
+                                        if (outDateTime.TimeOfDay > fdtWithBeforeGraceTimeLunchEndTime)
                                         {
-                                            netNormalHours = (outTime.TimeOfDay - ndtLunchEnd).Hours;
+                                            if (outDateTime.TimeOfDay <= fdtWithAfterGraceTimeEndTime)
+                                            {
+                                                netNormalHours += (outDateTime.TimeOfDay - fdtLunchEndTime).Hours;
+                                                netNormalMinutes += (outDateTime.TimeOfDay - fdtLunchEndTime).Minutes;
+                                            }
+                                            else
+                                            {
+                                                netNormalHours += (fdtEndTime - fdtLunchEndTime).Hours;
+                                                netNormalMinutes += (fdtEndTime - fdtLunchEndTime).Minutes;
+                                                otHours += (outDateTime.TimeOfDay - fdtEndTime).Hours;
+                                                otMinutes += (outDateTime.TimeOfDay - fdtEndTime).Minutes;
+                                            }
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        if (outDateTime.TimeOfDay <= fdtWithAfterGraceTimeEndTime)
+                                        {
+                                            netNormalHours += (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Hours;
+                                            netNormalMinutes += (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Minutes;
                                         }
                                         else
                                         {
-                                            netNormalHours = (ndtEnd - ndtLunchEnd).Hours - lunchHours;
-                                            otHours = (outTime.TimeOfDay - ndtEnd).Hours;
+                                            netNormalHours += (fdtEndTime - inDateTime.TimeOfDay).Hours;
+                                            netNormalMinutes += (fdtEndTime - inDateTime.TimeOfDay).Minutes;
+                                            otHours += (outDateTime.TimeOfDay - fdtEndTime).Hours;
+                                            otMinutes += (outDateTime.TimeOfDay - fdtEndTime).Minutes;
                                         }
+
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                lunchHours = (ndtLunchEndTime - ndtLunchStartTime).Hours;
+
+                                //MessageBox.Show(this, "Lunch Hrs: " + lunchHours);
+
+                                if (inDateTime.TimeOfDay < ndtWithBeforeGraceTimeLunchStartTime)
+                                {
+                                    if (outDateTime.TimeOfDay < ndtWithAfterGraceTimeLunchEndTime)
+                                    {
+                                        netNormalHours += (ndtLunchStartTime - inDateTime.TimeOfDay).Hours;
+                                        netNormalMinutes += (ndtLunchStartTime - inDateTime.TimeOfDay).Minutes;
+
+                                        //MessageBox.Show(this, "ibl obl Net hrs: " + netNormalHours + " Net Mins: " + netNormalMinutes);
+                                    }
+                                    else
+                                    {
+                                        if (outDateTime.TimeOfDay <= ndtWithAfterGraceTimeEndTime)
+                                        {
+                                            netNormalHours += (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Hours - lunchHours;
+                                            netNormalMinutes += (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Minutes;
+
+                                            //MessageBox.Show(this, "ibl oal obe Net hrs: " + netNormalHours + " Net Mins: " + netNormalMinutes);
+                                        }
+                                        else
+                                        {
+                                            netNormalHours += (ndtEndTime - inDateTime.TimeOfDay).Hours - lunchHours;
+                                            netNormalMinutes += (ndtEndTime - inDateTime.TimeOfDay).Minutes;
+                                            otHours += (outDateTime.TimeOfDay - ndtEndTime).Hours;
+                                            otMinutes += (outDateTime.TimeOfDay - ndtEndTime).Minutes;
+
+                                            //MessageBox.Show(this, "ibl oal oae Net hrs: " + netNormalHours + " Net Mins: " + netNormalMinutes);
+                                        }
+
                                     }
 
                                 }
                                 else
                                 {
-                                    if (outTime.TimeOfDay <= ndtEnd)
+                                    if (inDateTime.TimeOfDay < ndtWithBeforeGraceTimeLunchEndTime)
                                     {
-                                        netNormalHours = (outTime.TimeOfDay - inTime.TimeOfDay).Hours;
+                                        if (outDateTime.TimeOfDay > ndtWithBeforeGraceTimeLunchEndTime)
+                                        {
+                                            if (outDateTime.TimeOfDay <= ndtWithBeforeGraceTimeEndTime)
+                                            {
+                                                netNormalHours += (outDateTime.TimeOfDay - ndtLunchEndTime).Hours;
+                                                netNormalMinutes += (outDateTime.TimeOfDay - ndtLunchEndTime).Minutes;
+
+                                                //MessageBox.Show(this, "ible oale obe Net hrs: " + netNormalHours + " Net Mins: " + netNormalMinutes);
+                                            }
+                                            else
+                                            {
+                                                netNormalHours += (ndtEndTime - ndtLunchEndTime).Hours;
+                                                netNormalMinutes += (ndtEndTime - ndtLunchEndTime).Minutes;
+                                                otHours += (outDateTime.TimeOfDay - ndtEndTime).Hours;
+                                                otMinutes += (outDateTime.TimeOfDay - ndtEndTime).Minutes;
+
+                                                //MessageBox.Show(this, "ible oale oae Net hrs: " + netNormalHours + " Net Mins: " + netNormalMinutes);
+                                            }
+                                        }
+
                                     }
                                     else
                                     {
-                                        netNormalHours = (ndtEnd - inTime.TimeOfDay).Hours - lunchHours;
-                                        otHours = (outTime.TimeOfDay - ndtEnd).Hours;
-                                    }
+                                        if (outDateTime.TimeOfDay <= ndtWithAfterGraceTimeEndTime)
+                                        {
+                                            netNormalHours += (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Hours;
+                                            netNormalMinutes += (outDateTime.TimeOfDay - inDateTime.TimeOfDay).Minutes;
 
+                                            //MessageBox.Show(this, "iale obe Net hrs: " + netNormalHours + " Net Mins: " + netNormalMinutes);
+                                        }
+                                        else
+                                        {
+                                            netNormalHours += (ndtEndTime - inDateTime.TimeOfDay).Hours;
+                                            netNormalMinutes += (ndtEndTime - inDateTime.TimeOfDay).Minutes;
+                                            otHours += (outDateTime.TimeOfDay - ndtEndTime).Hours;
+                                            otMinutes += (outDateTime.TimeOfDay - ndtEndTime).Minutes;
+
+                                            //MessageBox.Show(this, "iale oae Net hrs: " + netNormalHours + " Net Mins: " + netNormalMinutes);
+                                        }
+
+                                    }
                                 }
                             }
                         }
 
-                        if (callOutInTime != null && callOutOutTime != null)
+                        callOutInDateTimes.OrderBy((a) => a);
+                        callOutOutDateTimes.OrderBy((a) => a);
+
+                        foreach (DateTime callOutInDateTime in callOutInDateTimes)
                         {
-                            callOutHours = (callOutOutTime.TimeOfDay - callOutInTime.TimeOfDay).Hours;
-                            callOutFromHours = callOutInTime.ToString("HH:mm");
-                            callOutToHours = callOutOutTime.ToString("HH:mm");
+                            DateTime callOutOutDateTime = DateTime.MaxValue;
+
+                            //finding nearest out time wrt in time.
+                            foreach (DateTime oDateTime in callOutOutDateTimes)
+                            {
+                                if (oDateTime < callOutInDateTime)
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    if (oDateTime < callOutOutDateTime)
+                                    {
+                                        callOutOutDateTime = oDateTime;
+                                    }
+                                }
+                            }
+
+                            if (callOutInDateTime != DateTime.MaxValue && callOutOutDateTime != DateTime.MaxValue)
+                            {
+                                callOutHours += (callOutOutDateTime - callOutInDateTime).Hours;
+                                callOutMinutes += (callOutOutDateTime - callOutInDateTime).Minutes;
+                            }
                         }
 
-                        if (cnicWiseReportInfo.ContainsKey(cnicNumber + "^" + date.ToString()))
+
+                        if (minCallOutInTimeBeforeStart != DateTime.MaxValue && maxCallOutOutTimeBeforeStart != DateTime.MaxValue)
                         {
-                            CardHolderReportInfo reportInfo = cnicWiseReportInfo[cnicNumber + "^" + date.ToString()];
+                            callOutFromHours = minCallOutInTimeBeforeStart.ToString("HH:mm");
+                            callOutToHours = maxCallOutOutTimeBeforeStart.ToString("HH:mm");
+                        }
+
+                        if (minCallOutInTimeAfterEnd != DateTime.MaxValue && maxCallOutOutTimeAfterEnd != DateTime.MaxValue)
+                        {
+                            if (minCallOutInTimeBeforeStart == DateTime.MaxValue)
+                            {
+                                callOutFromHours = minCallOutInTimeAfterEnd.ToString("HH:mm");
+                            }
+
+                            callOutToHours = maxCallOutOutTimeAfterEnd.ToString("HH:mm");
+                        }
+
+                        if (cnicDateWiseReportInfo.ContainsKey(cnicNumber + "^" + date.ToString()))
+                        {
+                            CardHolderReportInfo reportInfo = cnicDateWiseReportInfo[cnicNumber + "^" + date.ToString()];
 
                             if (reportInfo != null)
                             {
-                                if (reportInfo.NetNormalHours < netNormalHours)
-                                {
-                                    reportInfo.InTime = inTime;
-                                    reportInfo.OutTime = outTime;
+                                reportInfo.NetNormalHours += netNormalHours;
+                                reportInfo.NetNormalMinutes += netNormalMinutes;
+                                reportInfo.OverTimeHours += otHours;
+                                reportInfo.OverTimeMinutes += otMinutes;
+                                reportInfo.TotalCallOutHours += callOutHours;
+                                reportInfo.TotalCallOutMinutes += callOutMinutes;
 
-                                    reportInfo.NetNormalHours = netNormalHours;
+                                if (minInTime.TimeOfDay < reportInfo.MinInTime.TimeOfDay)
+                                {
+                                    reportInfo.MinInTime = minInTime;
                                 }
 
-                                if (reportInfo.OverTimeHours < otHours)
+                                if (maxOutTime.TimeOfDay > reportInfo.MaxOutTime.TimeOfDay)
                                 {
-                                    reportInfo.InTime = inTime;
-                                    reportInfo.OutTime = outTime;
-
-                                    reportInfo.OverTimeHours = otHours;
+                                    reportInfo.MaxOutTime = maxOutTime;
                                 }
 
-                                if (reportInfo.TotalCallOutHours < callOutHours)
+                                if (minCallOutInTimeBeforeStart.TimeOfDay < reportInfo.MinCallOutInTime.TimeOfDay)
                                 {
-                                    reportInfo.CallOutInTime = callOutInTime;
-                                    reportInfo.CallOutOutTime = callOutOutTime;
-
-                                    reportInfo.TotalCallOutHours = callOutHours;
+                                    reportInfo.MinCallOutInTime = minCallOutInTimeBeforeStart;
                                     reportInfo.CallOutFrom = callOutFromHours;
+                                }
+
+                                if (minCallOutInTimeAfterEnd.TimeOfDay < reportInfo.MinCallOutInTime.TimeOfDay)
+                                {
+                                    reportInfo.MinCallOutInTime = minCallOutInTimeAfterEnd;
+                                    reportInfo.CallOutFrom = callOutFromHours;
+                                }
+
+                                if (maxCallOutOutTimeAfterEnd.TimeOfDay > reportInfo.MaxCallOutOutTime.TimeOfDay)
+                                {
+                                    reportInfo.MaxCallOutOutTime = maxCallOutOutTimeAfterEnd;
+                                    reportInfo.CallOutTo = callOutToHours;
+                                }
+
+                                if (maxCallOutOutTimeAfterEnd == DateTime.MaxValue || maxCallOutOutTimeBeforeStart.TimeOfDay > reportInfo.MaxCallOutOutTime.TimeOfDay)
+                                {
+                                    reportInfo.MaxCallOutOutTime = maxCallOutOutTimeBeforeStart;
                                     reportInfo.CallOutTo = callOutToHours;
                                 }
                             }
                         }
                         else
                         {
-                            cnicWiseReportInfo.Add(cnicNumber + "^" + date.ToString(), new CardHolderReportInfo()
+                            lstCnics.Add(cnicNumber);
+
+                            cnicDateWiseReportInfo.Add(cnicNumber + "^" + date.ToString(), new CardHolderReportInfo()
                             {
                                 OccurrenceTime = date,
                                 FirstName = chl.FirstName,
+                                PNumber = pNumber.ToString(),
                                 CNICNumber = cnicNumber,
                                 Department = department,
                                 Section = section,
                                 Cadre = cadre,
                                 NetNormalHours = netNormalHours,
                                 OverTimeHours = otHours,
+                                TotalCallOutHours = callOutHours,
+                                NetNormalMinutes = netNormalMinutes,
+                                OverTimeMinutes = otMinutes,
+                                TotalCallOutMinutes = callOutMinutes,
                                 CallOutFrom = callOutFromHours,
                                 CallOutTo = callOutToHours,
-                                TotalCallOutHours = callOutHours,
-                                InTime = inTime,
-                                OutTime = outTime,
-                                CallOutInTime = callOutInTime,
-                                CallOutOutTime = callOutOutTime
+                                MinInTime = minInTime,
+                                MaxOutTime = maxOutTime,
+                                MinCallOutInTime = minCallOutInTimeAfterEnd < minCallOutInTimeBeforeStart ? minCallOutInTimeAfterEnd : minCallOutInTimeBeforeStart,
+                                MaxCallOutOutTime = maxCallOutOutTimeAfterEnd == DateTime.MaxValue ? maxCallOutOutTimeBeforeStart : maxCallOutOutTimeAfterEnd
+                            });
+                        }
+
+                        #endregion
+                    }
+                }
+            }
+
+            //MessageBox.Show(this, "Data Collected");
+            #endregion
+
+            #region Dummy Data
+
+            //cnicWiseReportInfo.Add("11111-1111111-1^" + DateTime.Now.Date, new CardHolderReportInfo()
+            //{
+            //    OccurrenceTime = DateTime.Now.Date,
+            //    FirstName = "Card Holder 1",
+            //    PNumber = "123456",
+            //    CNICNumber = "11111-1111111-1",
+            //    Department = "Department 1",
+            //    Section = "Section 1",
+            //    Cadre = "NMPT",
+            //    NetNormalHours = 8,
+            //    OverTimeHours = 2,
+            //    CallOutFrom = "18:00",
+            //    CallOutTo = "20:00",
+            //    TotalCallOutHours = 2,
+            //    MinInTime = DateTime.Now,
+            //    MaxOutTime = DateTime.Now
+            //});
+
+            //cnicWiseReportInfo.Add("11111-1111111-1^" + DateTime.Now.Date.AddDays(1), new CardHolderReportInfo()
+            //{
+            //    OccurrenceTime = DateTime.Now.Date.AddDays(1),
+            //    FirstName = "Card Holder 2",
+            //    PNumber = "123456",
+            //    CNICNumber = "11111-1111111-1",
+            //    Department = "Department 1",
+            //    Section = "Section 1",
+            //    Cadre = "NMPT",
+            //    NetNormalHours = 6,
+            //    OverTimeHours = 0,
+            //    CallOutFrom = "18:00",
+            //    CallOutTo = "20:00",
+            //    TotalCallOutHours = 2,
+            //    MinInTime = DateTime.MaxValue,
+            //    MaxOutTime = DateTime.Now
+            //});
+
+            //cnicWiseReportInfo.Add("11111-1111111-1^" + DateTime.Now.Date.AddDays(2), new CardHolderReportInfo()
+            //{
+            //    OccurrenceTime = DateTime.Now.Date.AddDays(2),
+            //    FirstName = "Card Holder 3",
+            //    PNumber = "123456",
+            //    CNICNumber = "11111-1111111-1",
+            //    Department = "Department 1",
+            //    Section = "Section 1",
+            //    Cadre = "NMPT",
+            //    NetNormalHours = 8,
+            //    OverTimeHours = 2,
+            //    CallOutFrom = "18:00",
+            //    CallOutTo = "20:00",
+            //    TotalCallOutHours = 2,
+            //    MinInTime = DateTime.Now,
+            //    MaxOutTime = DateTime.Now
+            //});
+
+            //cnicWiseReportInfo.Add("11111-1111111-2^" + DateTime.Now.Date, new CardHolderReportInfo()
+            //{
+            //    OccurrenceTime = DateTime.Now.Date,
+            //    FirstName = "Card Holder 4",
+            //    PNumber = "123456",
+            //    CNICNumber = "11111-1111111-2",
+            //    Department = "Department 1",
+            //    Section = "Section 1",
+            //    Cadre = "NMPT",
+            //    NetNormalHours = 8,
+            //    OverTimeHours = 2,
+            //    CallOutFrom = "18:00",
+            //    CallOutTo = "20:00",
+            //    TotalCallOutHours = 2,
+            //    MinInTime = DateTime.Now,
+            //    MaxOutTime = DateTime.Now
+            //});
+
+            //cnicWiseReportInfo.Add("11111-1111111-2^" + DateTime.Now.Date.AddDays(1), new CardHolderReportInfo()
+            //{
+            //    OccurrenceTime = DateTime.Now.Date.AddDays(1),
+            //    FirstName = "Card Holder 5",
+            //    PNumber = "123456",
+            //    CNICNumber = "11111-1111111-2",
+            //    Department = "Department 1",
+            //    Section = "Section 1",
+            //    Cadre = "NMPT",
+            //    NetNormalHours = 8,
+            //    OverTimeHours = 2,
+            //    CallOutFrom = "18:00",
+            //    CallOutTo = "20:00",
+            //    TotalCallOutHours = 2,
+            //    MinInTime = DateTime.Now,
+            //    MaxOutTime = DateTime.Now
+            //});
+
+            //cnicWiseReportInfo.Add("11111-1111111-2^" + DateTime.Now.Date.AddDays(2), new CardHolderReportInfo()
+            //{
+            //    OccurrenceTime = DateTime.Now.Date.AddDays(2),
+            //    FirstName = "Card Holder 6",
+            //    PNumber = "123456",
+            //    CNICNumber = "11111-1111111-2",
+            //    Department = "Department 1",
+            //    Section = "Section 1",
+            //    Cadre = "NMPT",
+            //    NetNormalHours = 8,
+            //    OverTimeHours = 2,
+            //    CallOutFrom = "18:00",
+            //    CallOutTo = "20:00",
+            //    TotalCallOutHours = 2,
+            //    MinInTime = DateTime.Now,
+            //    MaxOutTime = DateTime.Now
+            //});
+
+            //cnicWiseReportInfo.Add("11111-1111111-3^" + DateTime.Now.Date, new CardHolderReportInfo()
+            //{
+            //    OccurrenceTime = DateTime.Now.Date,
+            //    FirstName = "Card Holder 7",
+            //    PNumber = "123456",
+            //    CNICNumber = "11111-1111111-3",
+            //    Department = "Department 1",
+            //    Section = "Section 1",
+            //    Cadre = "NMPT",
+            //    NetNormalHours = 8,
+            //    OverTimeHours = 2,
+            //    CallOutFrom = "18:00",
+            //    CallOutTo = "20:00",
+            //    TotalCallOutHours = 2,
+            //    MinInTime = DateTime.Now,
+            //    MaxOutTime = DateTime.Now
+            //});
+
+            //cnicWiseReportInfo.Add("11111-1111111-3^" + DateTime.Now.Date.AddDays(1), new CardHolderReportInfo()
+            //{
+            //    OccurrenceTime = DateTime.Now.Date.AddDays(1),
+            //    FirstName = "Card Holder 8",
+            //    PNumber = "123456",
+            //    CNICNumber = "11111-1111111-3",
+            //    Department = "Department 1",
+            //    Section = "Section 1",
+            //    Cadre = "NMPT",
+            //    NetNormalHours = 8,
+            //    OverTimeHours = 2,
+            //    CallOutFrom = "18:00",
+            //    CallOutTo = "20:00",
+            //    TotalCallOutHours = 2,
+            //    MinInTime = DateTime.Now,
+            //    MaxOutTime = DateTime.Now
+            //});
+
+            //cnicWiseReportInfo.Add("11111-1111111-3^" + DateTime.Now.Date.AddDays(2), new CardHolderReportInfo()
+            //{
+            //    OccurrenceTime = DateTime.Now.Date.AddDays(2),
+            //    FirstName = "Card Holder 8",
+            //    PNumber = "123456",
+            //    CNICNumber = "11111-1111111-3",
+            //    Department = "Department 1",
+            //    Section = "Section 1",
+            //    Cadre = "NMPT",
+            //    NetNormalHours = 8,
+            //    OverTimeHours = 2,
+            //    CallOutFrom = "18:00",
+            //    CallOutTo = "20:00",
+            //    TotalCallOutHours = 2,
+            //    MinInTime = DateTime.Now,
+            //    MaxOutTime = DateTime.Now
+            //});
+
+
+            #endregion
+
+            if (cnicDateWiseReportInfo != null && cnicDateWiseReportInfo.Keys.Count > 0)
+            {
+                int totalDays = (toDate.Date - fromDate.Date).Days;
+
+                for (int i = 0; i <= totalDays; i++)
+                {
+                    DateTime date = fromDate.Date.AddDays(i);
+
+                    foreach (string strCnic in lstCnics)
+                    {
+                        if (cnicDateWiseReportInfo.ContainsKey(strCnic + "^" + date.ToString()))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            CardHolderReportInfo reportInfo = (from cnicDate in cnicDateWiseReportInfo
+                                                               where cnicDate.Key.Contains(strCnic)
+                                                               select cnicDate.Value).FirstOrDefault();
+
+                            if (reportInfo != null)
+                            {
+                                cnicDateWiseReportInfo.Add(strCnic + "^" + date.ToString(), new CardHolderReportInfo()
+                                {
+                                    OccurrenceTime = date,
+                                    FirstName = reportInfo.FirstName,
+                                    PNumber = reportInfo.PNumber,
+                                    CNICNumber = reportInfo.CNICNumber,
+                                    Department = reportInfo.Department,
+                                    Section = reportInfo.Section,
+                                    Cadre = reportInfo.Cadre,
+                                    MinInTime = DateTime.MaxValue,
+                                    MaxOutTime = DateTime.MaxValue,
+                                    MinCallOutInTime = DateTime.MaxValue,
+                                    MaxCallOutOutTime = DateTime.MaxValue
+                                });
+                            }
+                        }
+                    }
+                }
+
+
+                List<Cardholder> remainingCardHolders = (from chl in EFERTDbUtility.mCCFTCentral.Cardholders
+                                                         where chl != null &&
+                                                              !(from pds in chl.PersonalDataStrings
+                                                                where pds != null && pds.PersonalDataFieldID == 5051 && pds.Value != null && lstCnics.Contains(pds.Value)
+                                                                select pds).Any()
+                                                         select chl).ToList();
+
+                foreach (Cardholder remainingChl in remainingCardHolders)
+                {
+                    int pNumber = remainingChl.PersonalDataIntegers == null || remainingChl.PersonalDataIntegers.Count == 0 ? 0 : Convert.ToInt32(remainingChl.PersonalDataIntegers.ElementAt(0).Value);
+                    string strPnumber = Convert.ToString(pNumber);
+                    string cnicNumber = remainingChl.PersonalDataStrings == null ? string.Empty : (remainingChl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051) == null ? string.Empty : remainingChl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051).Value);
+                    string department = remainingChl.PersonalDataStrings == null ? string.Empty : (remainingChl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043) == null ? string.Empty : remainingChl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043).Value);
+                    string section = remainingChl.PersonalDataStrings == null ? string.Empty : (remainingChl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951) == null ? string.Empty : remainingChl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951).Value);
+                    string cadre = remainingChl.PersonalDataStrings == null ? string.Empty : (remainingChl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952) == null ? string.Empty : remainingChl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952).Value);
+                    string company = remainingChl.PersonalDataStrings == null ? "Unknown" : (remainingChl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5059) == null ? "Unknown" : remainingChl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5059).Value);
+
+                    //Filter By Department
+                    if (string.IsNullOrEmpty(department) || !string.IsNullOrEmpty(filterByDepartment) && department.ToLower() != filterByDepartment.ToLower())
+                    {
+                        continue;
+                    }
+
+                    //Filter By Section
+                    if (string.IsNullOrEmpty(section) || !string.IsNullOrEmpty(filterBySection) && section.ToLower() != filterBySection.ToLower())
+                    {
+                        continue;
+                    }
+
+                    //Filter By Cadre
+                    if (string.IsNullOrEmpty(cadre) || !string.IsNullOrEmpty(filterByCadre) && cadre.ToLower() != filterByCadre.ToLower())
+                    {
+                        continue;
+                    }
+
+                    //Filter By Company
+                    if (!string.IsNullOrEmpty(filterByCompany) && company.ToLower() != filterByCompany.ToLower())
+                    {
+                        continue;
+                    }
+
+                    //Filter By CNIC
+                    if (string.IsNullOrEmpty(cnicNumber) || !string.IsNullOrEmpty(filterByCNIC) && cnicNumber != filterByCNIC)
+                    {
+                        continue;
+                    }
+
+                    //Filter By Name
+                    if (!string.IsNullOrEmpty(filerByName) && !remainingChl.FirstName.ToLower().Contains(filerByName.ToLower()))
+                    {
+                        continue;
+                    }
+
+                    if (!string.IsNullOrEmpty(filterByPnumber) && strPnumber != filterByPnumber)
+                    {
+                        continue;
+                    }
+
+                    for (int i = 0; i <= totalDays; i++)
+                    {
+                        DateTime date = fromDate.Date.AddDays(i);
+                        if (!cnicDateWiseReportInfo.ContainsKey(cnicNumber + "^" + date.ToString()))
+                        {
+                            cnicDateWiseReportInfo.Add(cnicNumber + "^" + date.ToString(), new CardHolderReportInfo()
+                            {
+                                OccurrenceTime = date,
+                                FirstName = remainingChl.FirstName,
+                                PNumber = strPnumber,
+                                CNICNumber = cnicNumber,
+                                Department = department,
+                                Section = section,
+                                Cadre = cadre,
+                                MinInTime = DateTime.MaxValue,
+                                MaxOutTime = DateTime.MaxValue,
+                                MinCallOutInTime = DateTime.MaxValue,
+                                MaxCallOutOutTime = DateTime.MaxValue
                             });
                         }
 
                     }
                 }
-            }
 
-            #endregion
+                this.mData = new Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>>>();
 
-            #region Dummy Data
-
-            //cnicWiseReportInfo.Add("11111-1111111-1",new CardHolderReportInfo() {
-            //    OccurrenceTime = DateTime.Now.Date,
-            //    FirstName = "Card Holder 1",
-            //    CNICNumber = "11111-1111111-1",
-            //    Department = "Department 1",
-            //    Section = "Section 1",
-            //    Cadre = "NMPT 1",
-            //    NetNormalHours = 8,
-            //    OverTimeHours = 2,
-            //    CallOutFrom = "18:00",
-            //    CallOutTo = "20:00",
-            //    TotalCallOutHours = 2
-            //});
-
-            //cnicWiseReportInfo.Add("11111-1111111-2", new CardHolderReportInfo()
-            //{
-            //    OccurrenceTime = DateTime.Now.Date,
-            //    FirstName = "Card Holder 2",
-            //    CNICNumber = "11111-1111111-2",
-            //    Department = "Department 1",
-            //    Section = "Section 1",
-            //    Cadre = "NMPT 1",
-            //    NetNormalHours = 6,
-            //    OverTimeHours = 0,
-            //    CallOutFrom = "18:00",
-            //    CallOutTo = "20:00",
-            //    TotalCallOutHours = 2
-            //});
-
-            //cnicWiseReportInfo.Add("11111-1111111-3", new CardHolderReportInfo()
-            //{
-            //    OccurrenceTime = DateTime.Now.Date,
-            //    FirstName = "Card Holder 3",
-            //    CNICNumber = "11111-1111111-3",
-            //    Department = "Department 1",
-            //    Section = "Section 2",
-            //    Cadre = "NMPT",
-            //    NetNormalHours = 8,
-            //    OverTimeHours = 2,
-            //    CallOutFrom = "18:00",
-            //    CallOutTo = "20:00",
-            //    TotalCallOutHours = 2
-            //});
-
-            //cnicWiseReportInfo.Add("11111-1111111-4", new CardHolderReportInfo()
-            //{
-            //    OccurrenceTime = DateTime.Now.Date,
-            //    FirstName = "Card Holder 4",
-            //    CNICNumber = "11111-1111111-4",
-            //    Department = "Department 1",
-            //    Section = "Section 1",
-            //    Cadre = "NMPT 2",
-            //    NetNormalHours = 8,
-            //    OverTimeHours = 2,
-            //    CallOutFrom = "18:00",
-            //    CallOutTo = "20:00",
-            //    TotalCallOutHours = 2
-            //});
-
-            //cnicWiseReportInfo.Add("11111-1111111-5", new CardHolderReportInfo()
-            //{
-            //    OccurrenceTime = DateTime.Now.Date,
-            //    FirstName = "Card Holder 5",
-            //    CNICNumber = "11111-1111111-5",
-            //    Department = "Department 1",
-            //    Section = "Section 2",
-            //    Cadre = "NMPT",
-            //    NetNormalHours = 8,
-            //    OverTimeHours = 2,
-            //    CallOutFrom = "18:00",
-            //    CallOutTo = "20:00",
-            //    TotalCallOutHours = 2
-            //});
-
-            //cnicWiseReportInfo.Add("11111-1111111-6", new CardHolderReportInfo()
-            //{
-            //    OccurrenceTime = DateTime.Now.Date,
-            //    FirstName = "Card Holder 6",
-            //    CNICNumber = "11111-1111111-6",
-            //    Department = "Department 1",
-            //    Section = "Section 1",
-            //    Cadre = "NMPT",
-            //    NetNormalHours = 8,
-            //    OverTimeHours = 2,
-            //    CallOutFrom = "18:00",
-            //    CallOutTo = "20:00",
-            //    TotalCallOutHours = 2
-            //});
-
-            //cnicWiseReportInfo.Add("11111-1111111-7", new CardHolderReportInfo()
-            //{
-            //    OccurrenceTime = DateTime.Now.Date,
-            //    FirstName = "Card Holder 7",
-            //    CNICNumber = "11111-1111111-7",
-            //    Department = "Department 2",
-            //    Section = "Section 2",
-            //    Cadre = "NMPT",
-            //    NetNormalHours = 8,
-            //    OverTimeHours = 2,
-            //    CallOutFrom = "18:00",
-            //    CallOutTo = "20:00",
-            //    TotalCallOutHours = 2
-            //});
-
-            //cnicWiseReportInfo.Add("11111-1111111-8", new CardHolderReportInfo()
-            //{
-            //    OccurrenceTime = DateTime.Now.Date,
-            //    FirstName = "Card Holder 8",
-            //    CNICNumber = "11111-1111111-8",
-            //    Department = "Department 8",
-            //    Section = "Section 8",
-            //    Cadre = "NMPT",
-            //    NetNormalHours = 8,
-            //    OverTimeHours = 2,
-            //    CallOutFrom = "18:00",
-            //    CallOutTo = "20:00",
-            //    TotalCallOutHours = 2
-            //});
-
-
-            #endregion
-
-            if (cnicWiseReportInfo != null && cnicWiseReportInfo.Keys.Count > 0)
-            {
-                this.mData = new Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>>();
-
-                foreach (KeyValuePair<string, CardHolderReportInfo> reportInfo in cnicWiseReportInfo)
+                foreach (KeyValuePair<string, CardHolderReportInfo> reportInfo in cnicDateWiseReportInfo)
                 {
                     if (reportInfo.Value == null)
                     {
                         continue;
                     }
 
+                    string cnicNumber = reportInfo.Value.CNICNumber;
                     string department = reportInfo.Value.Department;
                     string section = reportInfo.Value.Section;
                     string cadre = reportInfo.Value.Cadre;
@@ -1221,35 +3127,45 @@ namespace AttendanceReport
                         {
                             if (this.mData[department][section].ContainsKey(cadre))
                             {
-                                this.mData[department][section][cadre].Add(reportInfo.Value);
+                                if (this.mData[department][section][cadre].ContainsKey(cnicNumber))
+                                {
+                                    this.mData[department][section][cadre][cnicNumber].Add(reportInfo.Value);
+                                }
+                                else
+                                {
+                                    this.mData[department][section][cadre].Add(cnicNumber, new List<CardHolderReportInfo>() { reportInfo.Value });
+                                }
                             }
                             else
                             {
-                                this.mData[department][section].Add(cadre, new List<CardHolderReportInfo>() { reportInfo.Value });
+                                Dictionary<string, List<CardHolderReportInfo>> cnicWiseList = new Dictionary<string, List<CardHolderReportInfo>>();
+                                cnicWiseList.Add(cnicNumber, new List<CardHolderReportInfo>() { reportInfo.Value });
+                                this.mData[department][section].Add(cadre, cnicWiseList);
                             }
                         }
                         else
                         {
-                            Dictionary<string, List<CardHolderReportInfo>> cadreWiseList = new Dictionary<string, List<CardHolderReportInfo>>();
-                            cadreWiseList.Add(cadre, new List<CardHolderReportInfo>() { reportInfo.Value });
+                            Dictionary<string, List<CardHolderReportInfo>> cnicWiseList = new Dictionary<string, List<CardHolderReportInfo>>();
+                            cnicWiseList.Add(cnicNumber, new List<CardHolderReportInfo>() { reportInfo.Value });
+                            Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>> cadreWiseList = new Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>();
+                            cadreWiseList.Add(cadre, cnicWiseList);
                             this.mData[department].Add(section, cadreWiseList);
                         }
                     }
                     else
                     {
-                        Dictionary<string, List<CardHolderReportInfo>> cadreWiseList = new Dictionary<string, List<CardHolderReportInfo>>();
-                        cadreWiseList.Add(cadre, new List<CardHolderReportInfo>() { reportInfo.Value });
+                        Dictionary<string, List<CardHolderReportInfo>> cnicWiseList = new Dictionary<string, List<CardHolderReportInfo>>();
+                        cnicWiseList.Add(cnicNumber, new List<CardHolderReportInfo>() { reportInfo.Value });
 
-                        Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>> sectionWiseReport = new Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>();
+                        Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>> cadreWiseList = new Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>();
+                        cadreWiseList.Add(cadre, cnicWiseList);
+
+                        Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> sectionWiseReport = new Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>>();
                         sectionWiseReport.Add(section, cadreWiseList);
 
                         this.mData.Add(department, sectionWiseReport);
                     }
                 }
-            }
-            else
-            {
-                MessageBox.Show(this, "No Data found.");
             }
 
             if (this.mData != null && this.mData.Count > 0)
@@ -1262,7 +3178,7 @@ namespace AttendanceReport
                 //Cursor.Current = currentCursor;
                 MessageBox.Show(this, "No data exist on current selected date range.");
             }
-            
+
 
 
             //create data object and print report.
@@ -1277,15 +3193,15 @@ namespace AttendanceReport
 
             if (extension == ".pdf")
             {
-                this.SaveAsPdf(this.mData, "Attendance Report");
+                this.SaveAsPdf(this.mData, "E-Attendance Report");
             }
             else if (extension == ".xlsx")
             {
-                this.SaveAsExcel(this.mData, "Attendance Report", "Attendance Report");
+                this.SaveAsExcel(this.mData, "E-Attendance Report", "E-Attendance Report");
             }
         }
 
-        private void SaveAsPdf(Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> data, string heading)
+        private void SaveAsPdf(Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>>> data, string heading)
         {
             Cursor currentCursor = Cursor.Current;
 
@@ -1310,10 +3226,10 @@ namespace AttendanceReport
                                 pdfDocument.AddEventHandler(PdfDocumentEvent.START_PAGE, new PdfHeaderAndFooter(doc, true, headerLeftText, headerRightText));
                                 pdfDocument.AddEventHandler(PdfDocumentEvent.END_PAGE, new PdfHeaderAndFooter(doc, false, footerLeftText, footerRightText));
 
-                                pdfDocument.SetDefaultPageSize(new iText.Kernel.Geom.PageSize(1000F, 842F));
-                                Table table = new Table((new List<float>() { 8F, 90F, 190F, 70F, 70F, 80F, 70F, 90F, 70F, 70F, 70F}).ToArray());
+                                pdfDocument.SetDefaultPageSize(new iText.Kernel.Geom.PageSize(980F, 842F));
+                                Table table = new Table((new List<float>() { 8F, 90F, 90F, 70F, 70F, 70F, 70F, 90F, 70F, 70F, 70F, 90F }).ToArray());
 
-                                table.SetWidth(880F);
+                                table.SetWidth(900F);
                                 table.SetFixedLayout();
                                 //Table table = new Table((new List<float>() { 8F, 100F, 150F, 225F, 60F, 40F, 100F, 125F, 150F }).ToArray());
 
@@ -1323,8 +3239,7 @@ namespace AttendanceReport
                                 //this.AddNewEmptyRow(table);
 
                                 //Sections and Data
-
-                                foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> department in data)
+                                foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>>> department in data)
                                 {
                                     if (department.Value == null)
                                     {
@@ -1334,7 +3249,7 @@ namespace AttendanceReport
                                     //Department
                                     this.AddDepartmentRow(table, department.Key);
 
-                                    foreach (KeyValuePair<string, Dictionary<string, List<CardHolderReportInfo>>> section in department.Value)
+                                    foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> section in department.Value)
                                     {
                                         if (section.Value == null)
                                         {
@@ -1344,32 +3259,48 @@ namespace AttendanceReport
                                         //Section
                                         this.AddSectionRow(table, section.Key);
 
-
-                                        foreach (KeyValuePair<string, List<CardHolderReportInfo>> cadre in section.Value)
+                                        foreach (KeyValuePair<string, Dictionary<string, List<CardHolderReportInfo>>> cadre in section.Value)
                                         {
                                             if (cadre.Value == null)
                                             {
                                                 continue;
                                             }
 
+                                            this.AddNewEmptyRow(table);
                                             //Cadre
                                             this.AddCadreRow(table, cadre.Key);
 
-                                            //Data
-                                            //this.AddNewEmptyRow(table, false);
 
-                                            this.AddTableHeaderRow(table);
-
-                                            for (int i = 0; i < cadre.Value.Count; i++)
+                                            foreach (KeyValuePair<string, List<CardHolderReportInfo>> cnicWise in cadre.Value)
                                             {
-                                                CardHolderReportInfo chl = cadre.Value[i];
-                                                this.AddTableDataRow(table, chl, i % 2 == 0);
-                                            }
+                                                if (cnicWise.Value == null || cnicWise.Value.Count == 0)
+                                                {
+                                                    continue;
+                                                }
 
-                                            this.AddNewEmptyRow(table);
+                                                string chlName = cnicWise.Value[0].FirstName;
+                                                string pNumber = cnicWise.Value[0].PNumber;
+
+                                                //cnicWise
+                                                this.AddChlRow(table, chlName, pNumber);
+
+                                                //Data
+                                                //this.AddNewEmptyRow(table, false);
+
+                                                this.AddTableHeaderRow(table);
+
+                                                for (int i = 0; i < cnicWise.Value.Count; i++)
+                                                {
+                                                    CardHolderReportInfo chl = cnicWise.Value[i];
+                                                    this.AddTableDataRow(table, chl, i % 2 != 0);
+                                                }
+
+                                                this.AddNewEmptyRow(table);
+                                            }
                                         }
                                     }
                                 }
+
 
 
 
@@ -1404,7 +3335,7 @@ namespace AttendanceReport
             }
         }
 
-        private void SaveAsExcel(Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> data, string sheetName, string heading)
+        private void SaveAsExcel(Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>>> data, string sheetName, string heading)
         {
             Cursor currentCursor = Cursor.Current;
             try
@@ -1422,24 +3353,26 @@ namespace AttendanceReport
                         work.View.ShowGridLines = false;
                         work.Cells.Style.Font.Name = "Segoe UI Light";
 
-                        work.Column(1).Width = 15.14;
-                        work.Column(2).Width = 37.29;
+                        work.Column(1).Width = 20;
+                        work.Column(2).Width = 20;
                         work.Column(3).Width = 15.14;
                         work.Column(4).Width = 15.14;
-                        work.Column(5).Width = 20;
+                        work.Column(5).Width = 15.14;
                         work.Column(6).Width = 15.14;
                         work.Column(7).Width = 20;
                         work.Column(8).Width = 15.14;
                         work.Column(9).Width = 15.14;
                         work.Column(10).Width = 15.14;
+                        work.Column(11).Width = 20;
 
                         //Heading
-                        work.Cells["A1:B2"].Merge = true;
-                        work.Cells["A1:B2"].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                        work.Cells["A1:B2"].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(252, 213, 180));
-                        work.Cells["A1:B2"].Style.Font.Size = 22;
-                        work.Cells["A1:B2"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
-                        work.Cells["A1:B2"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                        work.Cells["A1:C2"].Merge = true;
+                        //work.Cells["A1:C2"].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        //work.Cells["A1:C2"].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(252, 213, 180));
+                        work.Cells["A1:C2"].Style.Font.Size = 22;
+                        work.Cells["A1:C2"].Style.Font.Bold = true;
+                        work.Cells["A1:C2"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                        work.Cells["A1:C2"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
                         //work.Cells["A1:B2"].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thick;
                         //work.Cells["A1:B2"].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thick;
                         //work.Cells["A1:B2"].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thick;
@@ -1448,31 +3381,35 @@ namespace AttendanceReport
                         //work.Cells["A1:B2"].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                         //work.Cells["A1:B2"].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                         //work.Cells["A1:B2"].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                        work.Cells["A1:B2"].Value = heading;
+                        work.Cells["A1:C2"].Value = heading;
 
                         // img variable actually is your image path
                         System.Drawing.Image myImage = System.Drawing.Image.FromFile("Images/logo.png");
 
                         var pic = work.Drawings.AddPicture("Logo", myImage);
 
-                        pic.SetPosition(5, 1100);
+                        pic.SetPosition(5, 1000);
 
                         int row = 4;
 
                         work.Cells[row, 1].Style.Font.Bold = true;
-                        work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                        //work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                         work.Cells[row, 1, row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
                         work.Cells[row, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        work.Cells[row, 1, row, 2].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                         work.Cells[row, 1].Value = "Report From: ";
+                        work.Cells[row, 1].Style.Font.Bold = true;
                         work.Cells[row, 2].Value = this.dtpFromDate.Value.ToShortDateString();
                         work.Row(row).Height = 20;
 
                         row++;
                         work.Cells[row, 1].Style.Font.Bold = true;
-                        work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                        //work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                         work.Cells[row, 1, row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
                         work.Cells[row, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        work.Cells[row, 1, row, 2].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                         work.Cells[row, 1].Value = "Report To:";
+                        work.Cells[row, 1].Style.Font.Bold = true;
                         work.Cells[row, 2].Value = this.dtpToDate.Value.ToShortDateString();
                         work.Row(row).Height = 20;
 
@@ -1487,18 +3424,19 @@ namespace AttendanceReport
 
                         row++;
                         work.Cells[row, 1].Style.Font.Bold = true;
-                        work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                        //work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                         work.Cells[row, 1, row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
                         work.Cells[row, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        work.Cells[row, 1, row, 2].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                         work.Cells[row, 1].Value = "Report Time: ";
+                        work.Cells[row, 1].Style.Font.Bold = true;
                         work.Cells[row, 2].Value = DateTime.Now.ToString();
                         work.Row(row).Height = 20;
 
+                        //row++;
                         row++;
-                        row++;
-                        //Sections and Data
 
-                        foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> department in data)
+                        foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>>> department in data)
                         {
                             if (department.Value == null)
                             {
@@ -1507,9 +3445,10 @@ namespace AttendanceReport
 
                             //Department
                             work.Cells[row, 1].Style.Font.Bold = true;
-                            work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                            //work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                             work.Cells[row, 1, row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
                             work.Cells[row, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            work.Cells[row, 1, row, 2].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                             work.Cells[row, 1].Value = "Department:";
                             work.Cells[row, 2].Value = department.Key;
                             work.Cells[row, 2].Style.Font.UnderLine = true;
@@ -1517,7 +3456,7 @@ namespace AttendanceReport
 
                             row++;
 
-                            foreach (KeyValuePair<string, Dictionary<string, List<CardHolderReportInfo>>> section in department.Value)
+                            foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, List<CardHolderReportInfo>>>> section in department.Value)
                             {
                                 if (section.Value == null)
                                 {
@@ -1526,29 +3465,31 @@ namespace AttendanceReport
 
                                 //Section
                                 work.Cells[row, 1].Style.Font.Bold = true;
-                                work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                //work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                                 work.Cells[row, 1, row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
                                 work.Cells[row, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                work.Cells[row, 1, row, 2].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                                 work.Cells[row, 1].Value = "Section:";
                                 work.Cells[row, 2].Value = section.Key;
                                 work.Row(row).Height = 20;
 
                                 //Data
                                 row++;
+                                row++;
 
-                                foreach (KeyValuePair<string, List<CardHolderReportInfo>> cadre in section.Value)
+                                foreach (KeyValuePair<string, Dictionary<string, List<CardHolderReportInfo>>> cadre in section.Value)
                                 {
-
                                     if (cadre.Value == null)
                                     {
                                         continue;
                                     }
 
                                     //Section
-                                    work.Cells[row, 1].Style.Font.Bold = true;
-                                    work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                    work.Cells[row, 1, row, 2].Style.Font.Bold = true;
+                                    //work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                                     work.Cells[row, 1, row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
                                     work.Cells[row, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                    work.Cells[row, 1, row, 2].Style.Font.UnderLine = true;
                                     work.Cells[row, 1].Value = "Cadre:";
                                     work.Cells[row, 2].Value = cadre.Key;
                                     work.Row(row).Height = 20;
@@ -1556,82 +3497,154 @@ namespace AttendanceReport
                                     //Data
                                     row++;
 
-
-                                    work.Cells[row, 1, row, 10].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                    work.Cells[row, 1, row, 10].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                    work.Cells[row, 1, row, 10].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                    work.Cells[row, 1, row, 10].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-
-                                    work.Cells[row, 1, row, 10].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                    work.Cells[row, 1, row, 10].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                    work.Cells[row, 1, row, 10].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                    work.Cells[row, 1, row, 10].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-
-                                    work.Cells[row, 1, row, 10].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                    work.Cells[row, 1, row, 10].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(253, 233, 217));
-                                    work.Cells[row, 1, row, 10].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
-                                    work.Cells[row, 1, row, 10].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-
-                                    work.Cells[row, 1].Value = "Date";
-                                    work.Cells[row, 2].Value = "First Name";
-                                    work.Cells[row, 3].Value = "P-Number";
-                                    work.Cells[row, 4].Value = "Cadre";
-                                    work.Cells[row, 5].Value = "Net Normal Hrs";
-                                    work.Cells[row, 6].Value = "OT Hrs";
-                                    work.Cells[row, 7].Value = "Normal + OT Hrs";
-                                    work.Cells[row, 8].Value = "CO From Hrs";
-                                    work.Cells[row, 9].Value = "CO To Hrs";
-                                    work.Cells[row, 10].Value = "CO Total Hrs";
-
-                                    work.Row(row).Height = 20;
-
-                                    for (int i = 0; i < cadre.Value.Count; i++)
+                                    foreach (KeyValuePair<string, List<CardHolderReportInfo>> cnicWise in cadre.Value)
                                     {
-                                        row++;
-                                        work.Cells[row, 1, row, 10].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                        work.Cells[row, 1, row, 10].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                        work.Cells[row, 1, row, 10].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-                                        work.Cells[row, 1, row, 10].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
 
-                                        work.Cells[row, 1, row, 10].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                        work.Cells[row, 1, row, 10].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                        work.Cells[row, 1, row, 10].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-                                        work.Cells[row, 1, row, 10].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
-
-                                        if (i % 2 == 0)
+                                        if (cnicWise.Value == null || cnicWise.Value.Count == 0)
                                         {
-                                            work.Cells[row, 1, row, 10].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                            work.Cells[row, 1, row, 10].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                                            continue;
                                         }
 
-                                        work.Cells[row, 1, row, 10].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                                        //work.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                                        //work.Cells[row, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+                                        string chlName = cnicWise.Value[0].FirstName;
+                                        string pNumber = cnicWise.Value[0].PNumber;
 
-                                        CardHolderReportInfo chl = cadre.Value[i];
-                                        work.Cells[row, 1].Value = chl.OccurrenceTime.Date.ToShortDateString();
-                                        work.Cells[row, 2].Value = chl.FirstName;
-                                        work.Cells[row, 3].Value = chl.PNumber;
-                                        work.Cells[row, 4].Value = chl.Cadre;
-                                        work.Cells[row, 5].Value = chl.NetNormalHours.ToString();
-                                        work.Cells[row, 6].Value = chl.OverTimeHours.ToString();
-                                        work.Cells[row, 7].Value = (chl.NetNormalHours + chl.OverTimeHours).ToString();
-                                        work.Cells[row, 8].Value = chl.CallOutFrom;
-                                        work.Cells[row, 9].Value = chl.CallOutTo;
-                                        work.Cells[row, 10].Value = chl.TotalCallOutHours.ToString();
+                                        //Name
+                                        work.Cells[row, 1].Style.Font.Bold = true;
+                                        //work.Cells[row, 1].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                        work.Cells[row, 1, row, 4].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                        work.Cells[row, 1, row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                        work.Cells[row, 1].Value = "Name:";
+                                        work.Cells[row, 2, row, 4].Merge = true;
+                                        work.Cells[row, 2, row, 4].Value = chlName;
 
+                                        //Name
+                                        work.Cells[row, 5].Style.Font.Bold = true;
+                                        //work.Cells[row, 5].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                        work.Cells[row, 5, row, 8].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                        work.Cells[row, 5, row, 8].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                        work.Cells[row, 5].Value = "P No.:";
+                                        work.Cells[row, 6, row, 8].Merge = true;
+                                        work.Cells[row, 6, row, 8].Value = Convert.ToInt32(pNumber);
+                                        work.Row(row).Height = 20;
+
+                                        //Data
+                                        row++;
+
+
+                                        work.Cells[row, 1, row, 11].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                        work.Cells[row, 1, row, 11].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                        work.Cells[row, 11].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                        //work.Cells[row, 1, row, 11].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                        //work.Cells[row, 1, row, 11].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                                        //work.Cells[row, 1, row, 11].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                        //work.Cells[row, 1, row, 11].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                        //work.Cells[row, 1, row, 11].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                        //work.Cells[row, 1, row, 11].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+
+                                        work.Cells[row, 1, row, 11].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                        work.Cells[row, 1, row, 11].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(191, 191, 191));
+                                        work.Cells[row, 1, row, 11].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                        work.Cells[row, 1, row, 11].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                                        work.Cells[row, 1].Value = "Date";
+                                        work.Cells[row, 2].Value = "Day";
+                                        work.Cells[row, 3].Value = "Time In";
+                                        work.Cells[row, 4].Value = "Time Out";
+                                        work.Cells[row, 5].Value = "Net Hrs";
+                                        work.Cells[row, 6].Value = "OT Hrs";
+                                        work.Cells[row, 7].Value = "Nrml + OT Hrs";
+                                        work.Cells[row, 8].Value = "CO Time In";
+                                        work.Cells[row, 9].Value = "CO Time Out";
+                                        work.Cells[row, 10].Value = "CO Hrs";
+                                        work.Cells[row, 11].Value = "Remarks";
 
                                         work.Row(row).Height = 20;
+
+                                        for (int i = 0; i < cnicWise.Value.Count; i++)
+                                        {
+                                            row++;
+                                            work.Cells[row, 1, row, 11].Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                            work.Cells[row, 1, row, 11].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                            work.Cells[row, 11].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                            //work.Cells[row, 1, row, 11].Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                                            //work.Cells[row, 1, row, 11].Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                                            //work.Cells[row, 1, row, 11].Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                            //work.Cells[row, 1, row, 11].Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                            //work.Cells[row, 1, row, 11].Style.Border.Left.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+                                            //work.Cells[row, 1, row, 11].Style.Border.Right.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
+
+                                            if (i % 2 != 0)
+                                            {
+                                                work.Cells[row, 1, row, 11].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                                work.Cells[row, 1, row, 11].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(242, 242, 242));
+                                            }
+
+                                            work.Cells[row, 1, row, 11].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                            //work.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                            //work.Cells[row, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+
+                                            CardHolderReportInfo chl = cnicWise.Value[i];
+                                            work.Cells[row, 1].Value = chl.OccurrenceTime.Date.ToShortDateString();
+                                            work.Cells[row, 2].Value = chl.OccurrenceTime.Date.DayOfWeek.ToString();
+
+                                            int cellsRemains = 9;
+
+                                            if (chl.MinInTime == DateTime.MaxValue)
+                                            {
+                                                if (chl.MinCallOutInTime == DateTime.MaxValue)
+                                                {
+                                                    cellsRemains = 0;
+
+                                                    work.Cells[row, 3, row, 10].Merge = true;
+                                                    work.Cells[row, 3, row, 10].Style.Font.Bold = true;
+                                                    work.Cells[row, 3, row, 10].Value = "Absent";
+                                                }
+                                                else
+                                                {
+                                                    cellsRemains = 4;
+
+                                                    work.Cells[row, 3, row, 7].Merge = true;
+                                                    work.Cells[row, 3, row, 7].Style.Font.Bold = true;
+                                                    work.Cells[row, 3, row, 7].Value = "Absent";
+                                                }
+                                            }
+
+                                            if (cellsRemains == 9)
+                                            {
+                                                work.Cells[row, 3].Value = chl.MinInTime.ToString("HH:mm");
+                                                work.Cells[row, 4].Value = chl.MaxOutTime.ToString("HH:mm");
+                                                work.Cells[row, 5].Value = chl.NetNormalTime;
+                                                work.Cells[row, 6].Value = chl.OverTime;
+                                                work.Cells[row, 7].Value = chl.NetAndOverTime;
+                                            }
+
+                                            if (cellsRemains == 9 || cellsRemains == 4)
+                                            {
+                                                work.Cells[row, 8].Value = chl.CallOutFrom;
+                                                work.Cells[row, 9].Value = chl.CallOutTo;
+                                                work.Cells[row, 10].Value = chl.CallOutTime;
+                                            }
+
+                                            work.Cells[row, 11].Value = string.Empty;
+
+                                            work.Row(row).Height = 20;
+                                        }
+
+                                        row++;
+                                        row++;
                                     }
 
-                                    row++;
-                                    row++;
+
                                 }
 
-
                             }
-
                         }
+
+                        //Sections and Data
+
+
 
                         ex.SaveAs(new System.IO.FileInfo(this.saveFileDialog1.FileName));
 
@@ -1665,16 +3678,16 @@ namespace AttendanceReport
 
         private void AddMainHeading(Table table, string heading)
         {
-            Cell headingCell = new Cell(2, 6);
-            headingCell.SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER);
+            table.AddCell(new Cell().Add(new Paragraph(string.Empty).SetFontSize(22F)).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
+            Cell headingCell = new Cell(2, 7);
+            headingCell.SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT);
             headingCell.SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3));
-            headingCell.Add(new Paragraph(heading).SetFontSize(22F).SetBackgroundColor(new DeviceRgb(252, 213, 180))
+            headingCell.Add(new Paragraph(heading).SetFontSize(22F).SetBold()
                 // .SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 3))
                 );
             iText.Layout.Element.Image img = new iText.Layout.Element.Image(iText.IO.Image.ImageDataFactory.Create("Images/logo.png"));
 
             table.AddCell(headingCell);
-            table.AddCell(new Cell().Add(new Paragraph(string.Empty).SetFontSize(22F)).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
             table.AddCell(new Cell().Add(new Paragraph(string.Empty).SetFontSize(22F)).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
             //table.AddCell(new Cell().Add(new Paragraph(string.Empty).SetFontSize(22F)).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
             //table.AddCell(new Cell().Add(new Paragraph(string.Empty).SetFontSize(22F)).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
@@ -1784,19 +3797,24 @@ namespace AttendanceReport
             table.AddCell(new Cell().
                     Add(new Paragraph("Department:").
                     SetFontSize(11F).
-                    SetBold().
-                    SetFontColor(new DeviceRgb(247, 150, 70))).
+                    SetBold()).
                 SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
                 SetHeight(22F).
-                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                SetBorderBottom(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)));
             table.AddCell(new Cell().
                     Add(new Paragraph(departmentName).
                     SetFontSize(11F).SetUnderline()).
                 SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
                 SetHeight(22F).
-                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                SetBorderBottom(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)));
             table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
             table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
             table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
@@ -1817,23 +3835,24 @@ namespace AttendanceReport
             table.AddCell(new Cell().
                     Add(new Paragraph("Section:").
                     SetFontSize(11F).
-                    SetBold().
-                    SetFontColor(new DeviceRgb(247, 150, 70))).
+                    SetBold()).
                 SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
                 SetHeight(22F).
+                SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                 SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                SetBorderBottom(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)));
             table.AddCell(new Cell().
                     Add(new Paragraph(sectionName).
                     SetFontSize(11F)).
                 SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
                 SetHeight(22F).
+                SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                 SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                SetBorderBottom(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)));
             table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                     SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                     SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
@@ -1870,23 +3889,18 @@ namespace AttendanceReport
             table.AddCell(new Cell().
                     Add(new Paragraph("Cadre:").
                     SetFontSize(11F).
-                    SetBold().
-                    SetFontColor(new DeviceRgb(247, 150, 70))).
+                    SetBold().SetUnderline()).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                 SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
-                SetHeight(22F).
-                SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                SetHeight(22F));
             table.AddCell(new Cell().
                     Add(new Paragraph(cadreName).
-                    SetFontSize(11F)).
+                    SetFontSize(11F).SetBold().SetUnderline()).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                 SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
-                SetHeight(22F).
-                SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+                SetHeight(22F));
             table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                     SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                     SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
@@ -1918,6 +3932,77 @@ namespace AttendanceReport
             //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
         }
 
+        private void AddChlRow(Table table, string chlName, string pNumber)
+        {
+            table.StartNewRow();
+
+            table.AddCell(new Cell().SetHeight(22F).
+                    SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().
+                    Add(new Paragraph("Name:").
+                    SetFontSize(11F).
+                    SetBold()).
+                    SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
+                SetHeight(22F));
+            table.AddCell(new Cell(1, 3).
+                    Add(new Paragraph(chlName).
+                    SetFontSize(11F)).
+                    SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
+                SetHeight(22F));
+            //table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+            //        SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+            //        SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().
+                     Add(new Paragraph("P No:").
+                     SetFontSize(11F).
+                     SetBold()).
+                    SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                 SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
+                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
+                 SetHeight(22F));
+            table.AddCell(new Cell(1, 2).
+                    Add(new Paragraph(pNumber).
+                    SetFontSize(11F)).
+                SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
+                SetHeight(22F).
+                    SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                    SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            //table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+            //        SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+            //        SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            //table.AddCell(new Cell().SetHeight(22F).SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+            //        SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+            //        SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+
+            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+            //table.AddCell(new Cell().SetHeight(22F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+        }
+
         private void AddTableHeaderRow(Table table)
         {
             table.StartNewRow();
@@ -1925,75 +4010,83 @@ namespace AttendanceReport
             table.AddCell(new Cell().
                 SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                 SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
-                SetBorderBottom(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
-            table.AddCell(new Cell().
+                SetBorderBottom(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
+                SetBorderRight(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)));
+        table.AddCell(new Cell().
                     Add(new Paragraph("Date").
                     SetFontSize(11F)).
-                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(new DeviceRgb(191, 191, 191)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
-                    Add(new Paragraph("First Name").
+                    Add(new Paragraph("Day").
                     SetFontSize(11F)).
-                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(new DeviceRgb(191, 191, 191)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
-                    Add(new Paragraph("P-Number").
+                    Add(new Paragraph("Time In").
                     SetFontSize(11F)).
-                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(new DeviceRgb(191, 191, 191)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
-                    Add(new Paragraph("Cadre").
+                    Add(new Paragraph("Time Out").
                     SetFontSize(11F)).
-                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(new DeviceRgb(191, 191, 191)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
-                    Add(new Paragraph("Net Normal Hrs").
+                    Add(new Paragraph("Net Hrs").
                     SetFontSize(11F)).
-                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(new DeviceRgb(191, 191, 191)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
                     Add(new Paragraph("OT Hrs").
                     SetFontSize(11F)).
-                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(new DeviceRgb(191, 191, 191)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
-                    Add(new Paragraph("Normal + OT Hrs").
+                    Add(new Paragraph("Nrml + OT Hrs").
                     SetFontSize(11F)).
-                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(new DeviceRgb(191, 191, 191)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
-                    Add(new Paragraph("CO From Hrs").
+                    Add(new Paragraph("CO Time In").
                     SetFontSize(11F)).
-                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(new DeviceRgb(191, 191, 191)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
-                    Add(new Paragraph("CO To Hrs").
+                    Add(new Paragraph("CO Time Out").
                     SetFontSize(11F)).
-                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(new DeviceRgb(191, 191, 191)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
             table.AddCell(new Cell().
-                    Add(new Paragraph("CO Total Hrs").
+                    Add(new Paragraph("CO Hrs").
                     SetFontSize(11F)).
-                SetBackgroundColor(new DeviceRgb(253, 233, 217)).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(new DeviceRgb(191, 191, 191)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
+                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+            table.AddCell(new Cell().
+                    Add(new Paragraph("Remarks").
+                    SetFontSize(11F)).
+                SetBackgroundColor(new DeviceRgb(191, 191, 191)).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
         }
@@ -2013,74 +4106,127 @@ namespace AttendanceReport
                 SetBorderLeft(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                 SetBorderTop(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)).
                 SetBorderBottom(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 1)));
+
             table.AddCell(new Cell().
                     Add(new Paragraph(chl.OccurrenceTime.Date.ToShortDateString()).
                     SetFontSize(11F)).
-                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+
             table.AddCell(new Cell().
-                    Add(new Paragraph(string.IsNullOrEmpty(chl.FirstName) ? string.Empty : chl.FirstName).
+                    Add(new Paragraph(chl.OccurrenceTime.Date.DayOfWeek.ToString()).
                     SetFontSize(11F)).
-                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            table.AddCell(new Cell().
-                    Add(new Paragraph(string.IsNullOrEmpty(chl.PNumber) ? string.Empty : chl.PNumber).
+
+            int cellsRemains = 9;
+
+            if (chl.MinInTime == DateTime.MaxValue)
+            {
+                if (chl.MinCallOutInTime == DateTime.MaxValue)
+                {
+                    cellsRemains = 0;
+                    table.AddCell(new Cell(1, 8).
+                            Add(new Paragraph("Absent").
+                            SetFontSize(11F).SetBold()).
+                        SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                        SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
+                        SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                        SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+                }
+                else
+                {
+                    cellsRemains = 4;
+
+                    table.AddCell(new Cell(1, 4).
+                            Add(new Paragraph("Absent").
+                            SetFontSize(11F).SetBold()).
+                        SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                        SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
+                        SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                        SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+                }
+            }
+
+            if (cellsRemains == 9)
+            {
+                table.AddCell(new Cell().
+                    Add(new Paragraph(chl.MinInTime.ToString("HH:mm")).
                     SetFontSize(11F)).
-                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            table.AddCell(new Cell().
-                    Add(new Paragraph(string.IsNullOrEmpty(chl.Cadre) ? string.Empty : chl.Cadre).
-                    SetFontSize(11F)).
-                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
-                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            table.AddCell(new Cell().
-                    Add(new Paragraph(chl.NetNormalHours.ToString()).
-                    SetFontSize(11F)).
-                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
-                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            table.AddCell(new Cell().
-                    Add(new Paragraph(chl.OverTimeHours.ToString()).
-                    SetFontSize(11F)).
-                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
-                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            table.AddCell(new Cell().
-                    Add(new Paragraph((chl.NetNormalHours + chl.OverTimeHours).ToString()).
-                    SetFontSize(11F)).
-                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
-                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            table.AddCell(new Cell().
+
+                table.AddCell(new Cell().
+                        Add(new Paragraph(chl.MaxOutTime.ToString("HH:mm")).
+                        SetFontSize(11F)).
+                    SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                    SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
+                    SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+
+                table.AddCell(new Cell().
+                        Add(new Paragraph(chl.NetNormalTime).
+                        SetFontSize(11F)).
+                    SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                    SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
+                    SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+
+                table.AddCell(new Cell().
+                        Add(new Paragraph(chl.OverTime).
+                        SetFontSize(11F)).
+                    SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                    SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
+                    SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+
+                table.AddCell(new Cell().
+                        Add(new Paragraph(chl.NetAndOverTime).
+                        SetFontSize(11F)).
+                    SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                    SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
+                    SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+            }
+
+            if (cellsRemains == 9 || cellsRemains == 4)
+            {
+                table.AddCell(new Cell().
                     Add(new Paragraph(string.IsNullOrEmpty(chl.CallOutFrom) ? string.Empty : chl.CallOutFrom).
                     SetFontSize(11F)).
-                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+
+                table.AddCell(new Cell().
+                        Add(new Paragraph(string.IsNullOrEmpty(chl.CallOutTo) ? string.Empty : chl.CallOutTo).
+                        SetFontSize(11F)).
+                    SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                    SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
+                    SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+
+                table.AddCell(new Cell().
+                        Add(new Paragraph(chl.CallOutTime).
+                        SetFontSize(11F)).
+                    SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                    SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
+                    SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
+                    SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
+            }
+
             table.AddCell(new Cell().
-                    Add(new Paragraph(string.IsNullOrEmpty(chl.CallOutTo) ? string.Empty : chl.CallOutTo).
+                    Add(new Paragraph(string.Empty).
                     SetFontSize(11F)).
-                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
-                SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
-                SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
-            table.AddCell(new Cell().
-                    Add(new Paragraph(chl.TotalCallOutHours.ToString()).
-                    SetFontSize(11F)).
-                SetBackgroundColor(altRow ? new DeviceRgb(211, 211, 211) : iText.Kernel.Colors.Color.WHITE).
-                SetBorder(new iText.Layout.Borders.SolidBorder(new DeviceRgb(247, 150, 70), 1)).
+                SetBackgroundColor(altRow ? new DeviceRgb(242, 242, 242) : iText.Kernel.Colors.Color.WHITE).
+                SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)).
                 SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE));
         }

@@ -21,6 +21,9 @@ namespace AttendanceReport
         public static EFERTDbContext mEFERTDb = null;
         public static List<VisitingLocations> mVisitingLocations = null;
 
+        public static string CONST_SYSTEM_BLOCKED_BY = "System";
+        public static string CONST_SYSTEM_LIMIT_REACHED_REASON = "System has block this person because maximum limit of temporary check in has reached.";
+
         public static void InitializeDatabases()
         {
             mEFERTDb = new EFERTDbContext();
@@ -100,7 +103,7 @@ namespace AttendanceReport
             return message;
         }
                 
-        public static LimitStatus CheckIfUserCheckedInLimitReached(List<CheckInAndOutInfo> checkIns, bool sendEmail = true)
+        public static LimitStatus CheckIfUserCheckedInLimitReached(List<CheckInAndOutInfo> checkIns, List<BlockedPersonInfo> blocks, bool sendEmail = true)
         {
             LimitStatus limitStatus = LimitStatus.Allowed;
             SystemSetting setting = EFERTDbUtility.mEFERTDb.SystemSetting.FirstOrDefault();
@@ -111,13 +114,34 @@ namespace AttendanceReport
             if (checkIns.Count > 0)
             {
                 CheckInAndOutInfo last = checkIns.Last();
-                                
+
                 if (last.CheckedIn)
                 {
                     limitStatus = LimitStatus.CurrentlyCheckIn;
                 }
                 else
                 {
+
+                    DateTime fromDate = new DateTime(DateTime.Now.Year, 10, 1);
+                    DateTime toDate = new DateTime(DateTime.Now.Year + 1, 10, 1);
+
+                    BlockedPersonInfo lastBlockedPerson = (from block in blocks
+                                                           where block != null &&
+                                                                 block.BlockedTime >= fromDate &&
+                                                                 block.BlockedTime < toDate && 
+                                                                 !block.Blocked && 
+                                                                 block.BlockedBy == CONST_SYSTEM_BLOCKED_BY
+                                                           select block).LastOrDefault();
+
+                    if (lastBlockedPerson != null)
+                    {
+                        fromDate = lastBlockedPerson.UnBlockTime;
+                    }
+
+                    checkIns = (from checkin in checkIns
+                                where checkin != null && checkin.DateTimeIn >= fromDate && checkin.DateTimeIn < toDate
+                                select checkin).ToList();
+
                     string name, cnic = string.Empty;
 
                     if (last.CardHolderInfos != null)
@@ -175,22 +199,22 @@ namespace AttendanceReport
 
                             TimeSpan timeDiff = currDateTimeIn.Date - previousDateTimeIn.Date;
 
-                            
 
-                            bool isContinous = timeDiff.Days == 1 || timeDiff.Days == 2 && currDateTimeIn.DayOfWeek == DayOfWeek.Monday;
 
-                            if (isContinous)
+                            //bool isContinous = timeDiff.Days == 1 || timeDiff.Days == 2 && currDateTimeIn.DayOfWeek == DayOfWeek.Monday;
+
+                            if (timeDiff.Days >= 1 )
                             {
                                 count++;
                             }
-                            else
-                            {
-                                if (currDateTimeIn.Date != previousDateTimeIn.Date)
-                                {
-                                    count = 1;
-                                }
-                                
-                            }
+                            //else
+                            //{
+                            //    if (currDateTimeIn.Date != previousDateTimeIn.Date)
+                            //    {
+                            //        count = 1;
+                            //    }
+
+                            //}
 
                             previousDateTimeIn = currDateTimeIn;
                         }
@@ -221,7 +245,7 @@ namespace AttendanceReport
                                             }
                                         }
                                     }
-                                    
+
 
                                     limitStatus = LimitStatus.EmailAlerted;
                                 }
@@ -230,11 +254,11 @@ namespace AttendanceReport
                                     limitStatus = LimitStatus.EmailAlertDisabled;
                                 }
                             }
-                            
+
                         }
                         else
                         {
-                            limitStatus = LimitStatus.Allowed;                            
+                            limitStatus = LimitStatus.Allowed;
                         }
                     }
                 }
@@ -355,44 +379,105 @@ namespace AttendanceReport
             }
         }
 
-        public static void UpdateDropDownFields(ComboBox cbxDepartments, ComboBox cbxSections, ComboBox cbxCompany, ComboBox cbxCadre)
+        public static void UpdateDropDownFields(ComboBox cbxDepartments, ComboBox cbxSections, ComboBox cbxCompany, ComboBox cbxCadre, ComboBox cbxCrew)
         {
             if (cbxDepartments != null)
             {
+                List<string> ccftDepartments = (from pds in EFERTDbUtility.mCCFTCentral.PersonalDataStrings
+                                            where pds != null && pds.PersonalDataFieldID == 5043 && pds.Value != null
+                                            select pds.Value).Distinct().ToList();
+
                 List<string> departments = (from depart in EFERTDbUtility.mEFERTDb.Departments
                                             where depart != null && !string.IsNullOrEmpty(depart.DepartmentName)
                                             select depart.DepartmentName).ToList();
 
-                cbxDepartments.Items.AddRange(departments.ToArray());
+                departments.Insert(0, string.Empty);
+
+                departments = departments.TakeWhile(a => !ccftDepartments.Exists(b => b.ToLower() == a.ToLower())).ToList();
+
+                ccftDepartments.AddRange(departments);
+
+                ccftDepartments.Sort();
+
+                cbxDepartments.Items.AddRange(ccftDepartments.ToArray());
             }
 
             if (cbxSections != null)
             {
+                List<string> ccftSections = (from pds in EFERTDbUtility.mCCFTCentral.PersonalDataStrings
+                                         where pds != null && pds.PersonalDataFieldID == 12951 && pds.Value != null
+                                         select pds.Value).Distinct().ToList();
+
                 List<string> sections = (from section in EFERTDbUtility.mEFERTDb.Sections
                                          where section != null && !string.IsNullOrEmpty(section.SectionName)
                                          select section.SectionName).ToList();
 
-                cbxSections.Items.AddRange(sections.ToArray());
+                sections.Insert(0, string.Empty);
+
+                sections = sections.TakeWhile(a => !ccftSections.Exists(b => b.ToLower() == a.ToLower())).ToList();
+
+                ccftSections.AddRange(sections);
+
+                ccftSections.Sort();
+
+                cbxSections.Items.AddRange(ccftSections.ToArray());
             }
 
             if (cbxCompany != null)
             {
+                List<string> ccftCompanyNames = (from pds in EFERTDbUtility.mCCFTCentral.PersonalDataStrings
+                                             where pds != null && pds.PersonalDataFieldID == 5059 && pds.Value != null
+                                             select pds.Value).Distinct().ToList();
+
                 List<string> companies = (from company in EFERTDbUtility.mEFERTDb.Companies
                                           where company != null && !string.IsNullOrEmpty(company.CompanyName)
                                           select company.CompanyName).ToList();
 
-                cbxCompany.Items.AddRange(companies.ToArray());
+                companies.Insert(0, string.Empty);
+
+                companies = companies.TakeWhile(a => !ccftCompanyNames.Exists(b => b.ToLower() == a.ToLower())).ToList();
+
+                ccftCompanyNames.AddRange(companies);
+
+                ccftCompanyNames.Sort();
+
+                cbxCompany.Items.AddRange(ccftCompanyNames.ToArray());
             }
 
             if (cbxCadre != null)
             {
+                List<string> ccftCadres = (from pds in EFERTDbUtility.mCCFTCentral.PersonalDataStrings
+                                       where pds != null && pds.PersonalDataFieldID == 12952 && pds.Value != null
+                                       select pds.Value).Distinct().ToList();
+
                 List<string> cadres = (from cadre in EFERTDbUtility.mEFERTDb.Cadres
                                        where cadre != null && !string.IsNullOrEmpty(cadre.CadreName)
                                        select cadre.CadreName).ToList();
 
-                cbxCadre.Items.AddRange(cadres.ToArray());
+                cadres.Insert(0, string.Empty);
+
+                cadres = cadres.TakeWhile(a => !ccftCadres.Exists(b => b.ToLower() == a.ToLower())).ToList();
+
+                ccftCadres.AddRange(cadres);
+
+                ccftCadres.Sort();
+
+                cbxCadre.Items.AddRange(ccftCadres.ToArray());
             }
-            
+
+            if (cbxCrew != null)
+            {
+                List<string> crews = (from pds in EFERTDbUtility.mCCFTCentral.PersonalDataStrings
+                                      where pds != null && pds.PersonalDataFieldID == 12869 && pds.Value != null
+                                      select pds.Value).Distinct().ToList();
+
+                crews.Insert(0, string.Empty);
+                
+                crews.Sort();
+
+                cbxCrew.Items.AddRange(crews.ToArray());
+
+            }
 
         }
     }

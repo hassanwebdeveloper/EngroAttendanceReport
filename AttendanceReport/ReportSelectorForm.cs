@@ -15,13 +15,32 @@ namespace AttendanceReport
         public ReportSelectorForm()
         {
             InitializeComponent();
+
+            this.UpdateLayout();
+        }
+
+        private void UpdateLayout()
+        {
+            if (LoginForm.mLoggedInUser.UserName == "user")
+            {
+                this.btnLateArrivalReport.Visible = false;
+                this.btnAttendance.Visible = false;
+                this.btnContractorWise.Visible = false;
+                this.button1.Visible = false;
+                this.btnCategoryWise.Visible = false;
+                this.btnCategoryWiseNotReturned.Visible = false;
+                this.btnBannedEntry.Visible = false;
+                this.btnAlarmedListReport.Visible = false;
+                this.btnAttendanceReport.Location = new Point(78, 39);
+                this.Size = new Size(287, 169);
+            }
         }
 
         private void btnLateArrivalReport_Click(object sender, EventArgs e)
         {
-            Form1 form = new Form1(true);
+            Form1 form = new Form1();
 
-            form.ShowDialog(this);
+            form.Show(this);
         }
 
         private void ReportSelectorForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -34,58 +53,58 @@ namespace AttendanceReport
 
         private void btnAttendance_Click(object sender, EventArgs e)
         {
-            Form1 form = new Form1(false);
+            ActivityReportForm form = new ActivityReportForm();
 
-            form.ShowDialog(this);
+            form.Show(this);
         }
 
         private void btnContractorWise_Click(object sender, EventArgs e)
         {
             ContractorWiseReportForm form = new ContractorWiseReportForm(false);
 
-            form.ShowDialog(this);
+            form.Show(this);
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             ContractorWiseReportForm form = new ContractorWiseReportForm(true);
 
-            form.ShowDialog(this);
+            form.Show(this);
         }
 
         private void btnCategoryWise_Click(object sender, EventArgs e)
         {
             CategoryWiseReportForm form = new CategoryWiseReportForm(false);
 
-            form.ShowDialog(this);
+            form.Show(this);
         }
 
         private void btnCategoryWiseNotReturned_Click(object sender, EventArgs e)
         {
             CategoryWiseReportForm form = new CategoryWiseReportForm(true);
 
-            form.ShowDialog(this);
+            form.Show(this);
         }
 
         private void btnBannedEntry_Click(object sender, EventArgs e)
         {
             BannedEntryReportForm form = new BannedEntryReportForm();
 
-            form.ShowDialog(this);
+            form.Show(this);
         }
 
         private void btnAlarmedListReport_Click(object sender, EventArgs e)
         {
             AlarmedListReportForm form = new AlarmedListReportForm();
 
-            form.ShowDialog(this);
+            form.Show(this);
         }
 
         private void btnAttendanceReport_Click(object sender, EventArgs e)
         {
             LMSAttendanceReportForm form = new LMSAttendanceReportForm();
 
-            form.ShowDialog(this);
+            form.Show(this);
         }
     }
 }

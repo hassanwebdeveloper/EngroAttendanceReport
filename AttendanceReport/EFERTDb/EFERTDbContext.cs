@@ -11,7 +11,7 @@ namespace AttendanceReport.EFERTDb
     {
         public EFERTDbContext() : base("name=EFERTDb")
         {
-            Database.SetInitializer<EFERTDbContext>(new EFERTInitializer());
+            Database.SetInitializer<EFERTDbContext>(null);
         }
 
         public DbSet<CardHolderInfo> CardHolders { get; set; }

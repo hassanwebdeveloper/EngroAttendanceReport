@@ -96,6 +96,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActivityReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ActivityReportForm.Designer.cs">
+      <DependentUpon>ActivityReportForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="AlarmedListReportForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -462,6 +468,9 @@
     <Compile Include="SplashScreen.Designer.cs">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ActivityReportForm.resx">
+      <DependentUpon>ActivityReportForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="AlarmedListReportForm.resx">
       <DependentUpon>AlarmedListReportForm.cs</DependentUpon>
     </EmbeddedResource>

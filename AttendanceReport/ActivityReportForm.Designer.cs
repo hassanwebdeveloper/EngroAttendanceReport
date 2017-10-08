@@ -1,6 +1,6 @@
 ﻿namespace AttendanceReport
 {
-    partial class Form1
+    partial class ActivityReportForm
     {
         /// <summary>
         /// Required designer variable.
@@ -15,6 +15,9 @@
         {
             this.tbxPNumber.KeyPress -= TextBox1_KeyPress;
             this.tbxCarNumber.KeyPress -= TextBox1_KeyPress;
+            this.cbxCrew.DropDown -= CbxCrew_DropDown;
+            this.cbxSections.DropDown -= CbxSections_DropDown;
+            this.cbxDepartments.DropDown -= CbxDepartments_DropDown;
 
             if (disposing && (components != null))
             {
@@ -37,11 +40,6 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.dtpToDate = new System.Windows.Forms.DateTimePicker();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.dtpLateTimeStart = new System.Windows.Forms.DateTimePicker();
-            this.gbxLateTimeRange = new System.Windows.Forms.GroupBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.dtpLateTimeEnd = new System.Windows.Forms.DateTimePicker();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.tbxCnic = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -63,7 +61,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.gbxLateTimeRange.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -120,57 +117,6 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "To Date";
             // 
-            // dtpLateTimeStart
-            // 
-            this.dtpLateTimeStart.Format = System.Windows.Forms.DateTimePickerFormat.Time;
-            this.dtpLateTimeStart.Location = new System.Drawing.Point(41, 19);
-            this.dtpLateTimeStart.Name = "dtpLateTimeStart";
-            this.dtpLateTimeStart.ShowUpDown = true;
-            this.dtpLateTimeStart.Size = new System.Drawing.Size(96, 20);
-            this.dtpLateTimeStart.TabIndex = 1;
-            this.dtpLateTimeStart.Value = new System.DateTime(2017, 2, 20, 8, 0, 0, 0);
-            // 
-            // gbxLateTimeRange
-            // 
-            this.gbxLateTimeRange.Controls.Add(this.label2);
-            this.gbxLateTimeRange.Controls.Add(this.label1);
-            this.gbxLateTimeRange.Controls.Add(this.dtpLateTimeEnd);
-            this.gbxLateTimeRange.Controls.Add(this.dtpLateTimeStart);
-            this.gbxLateTimeRange.Location = new System.Drawing.Point(14, 259);
-            this.gbxLateTimeRange.Name = "gbxLateTimeRange";
-            this.gbxLateTimeRange.Size = new System.Drawing.Size(293, 52);
-            this.gbxLateTimeRange.TabIndex = 4;
-            this.gbxLateTimeRange.TabStop = false;
-            this.gbxLateTimeRange.Text = "Late Time Range";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(154, 23);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(26, 13);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "End";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 23);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(29, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Start";
-            // 
-            // dtpLateTimeEnd
-            // 
-            this.dtpLateTimeEnd.Format = System.Windows.Forms.DateTimePickerFormat.Time;
-            this.dtpLateTimeEnd.Location = new System.Drawing.Point(186, 19);
-            this.dtpLateTimeEnd.Name = "dtpLateTimeEnd";
-            this.dtpLateTimeEnd.ShowUpDown = true;
-            this.dtpLateTimeEnd.Size = new System.Drawing.Size(96, 20);
-            this.dtpLateTimeEnd.TabIndex = 2;
-            this.dtpLateTimeEnd.Value = new System.DateTime(2017, 2, 20, 8, 0, 0, 0);
-            // 
             // groupBox4
             // 
             this.groupBox4.Controls.Add(this.tbxCnic);
@@ -222,6 +168,7 @@
             this.cbxCompany.Name = "cbxCompany";
             this.cbxCompany.Size = new System.Drawing.Size(188, 21);
             this.cbxCompany.TabIndex = 19;
+            this.cbxCompany.DropDown += new System.EventHandler(this.cbxCompany_DropDown);
             // 
             // label10
             // 
@@ -240,6 +187,7 @@
             this.cbxCadre.Name = "cbxCadre";
             this.cbxCadre.Size = new System.Drawing.Size(185, 21);
             this.cbxCadre.TabIndex = 17;
+            this.cbxCadre.DropDown += new System.EventHandler(this.cbxCadre_DropDown);
             // 
             // label9
             // 
@@ -258,6 +206,7 @@
             this.cbxCrew.Name = "cbxCrew";
             this.cbxCrew.Size = new System.Drawing.Size(188, 21);
             this.cbxCrew.TabIndex = 15;
+            this.cbxCrew.DropDown += new System.EventHandler(this.CbxCrew_DropDown);
             // 
             // label8
             // 
@@ -324,6 +273,7 @@
             this.cbxSections.Name = "cbxSections";
             this.cbxSections.Size = new System.Drawing.Size(188, 21);
             this.cbxSections.TabIndex = 7;
+            this.cbxSections.DropDown += new System.EventHandler(this.CbxSections_DropDown);
             // 
             // label4
             // 
@@ -342,6 +292,7 @@
             this.cbxDepartments.Name = "cbxDepartments";
             this.cbxDepartments.Size = new System.Drawing.Size(185, 21);
             this.cbxDepartments.TabIndex = 5;
+            this.cbxDepartments.DropDown += new System.EventHandler(this.CbxDepartments_DropDown);
             // 
             // label3
             // 
@@ -352,33 +303,31 @@
             this.label3.TabIndex = 4;
             this.label3.Text = "Department";
             // 
-            // Form1
+            // ActivityReportForm
             // 
             this.AcceptButton = this.btnGenerate;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(570, 320);
             this.Controls.Add(this.groupBox4);
-            this.Controls.Add(this.gbxLateTimeRange);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnGenerate);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "Form1";
+            this.Name = "ActivityReportForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.Text = "Engro Fertilizer";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Activity Report";
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
-            this.gbxLateTimeRange.ResumeLayout(false);
-            this.gbxLateTimeRange.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
 
         }
 
-        
+
 
 
 
@@ -390,11 +339,6 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.DateTimePicker dtpToDate;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.DateTimePicker dtpLateTimeStart;
-        private System.Windows.Forms.GroupBox gbxLateTimeRange;
-        private System.Windows.Forms.DateTimePicker dtpLateTimeEnd;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.ComboBox cbxDepartments;
         private System.Windows.Forms.Label label3;
@@ -416,4 +360,3 @@
         private System.Windows.Forms.Label label10;
     }
 }
-

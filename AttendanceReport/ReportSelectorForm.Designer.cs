@@ -74,23 +74,23 @@
             // 
             // button1
             // 
-            this.button1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.button1.Location = new System.Drawing.Point(155, 124);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(137, 50);
             this.button1.TabIndex = 14;
-            this.button1.Text = "Contractor Wise Not Returned";
+            this.button1.Text = "Contractor Wise Card Not Retuned";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // btnCategoryWiseNotReturned
             // 
-            this.btnCategoryWiseNotReturned.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCategoryWiseNotReturned.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.btnCategoryWiseNotReturned.Location = new System.Drawing.Point(155, 68);
             this.btnCategoryWiseNotReturned.Name = "btnCategoryWiseNotReturned";
             this.btnCategoryWiseNotReturned.Size = new System.Drawing.Size(137, 50);
             this.btnCategoryWiseNotReturned.TabIndex = 16;
-            this.btnCategoryWiseNotReturned.Text = "Category Wise Not Returned";
+            this.btnCategoryWiseNotReturned.Text = "Individual Wise Card Not Returned";
             this.btnCategoryWiseNotReturned.UseVisualStyleBackColor = true;
             this.btnCategoryWiseNotReturned.Click += new System.EventHandler(this.btnCategoryWiseNotReturned_Click);
             // 
