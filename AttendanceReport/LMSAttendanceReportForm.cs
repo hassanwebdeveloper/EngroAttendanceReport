@@ -38,7 +38,9 @@ namespace AttendanceReport
         {
             this.mData = null;
             DateTime fromDate = this.dtpFromDate.Value.Date;
+            DateTime fromDateUtc = fromDate.ToUniversalTime();
             DateTime toDate = this.dtpToDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+            DateTime toDateUtc = toDate.ToUniversalTime();
 
             DateTime ndtStartDate = this.dtpNdtStart.Value;
             DateTime ndtEndDate = this.dtpNdtEnd.Value;
@@ -117,8 +119,8 @@ namespace AttendanceReport
             List<CCFTEvent.Event> lstEvents = (from events in EFERTDbUtility.mCCFTEvent.Events
                                                where
                                                    events != null && (events.EventType == 20001 || events.EventType == 20003) &&
-                                                   events.OccurrenceTime >= fromDate &&
-                                                   events.OccurrenceTime < toDate
+                                                   events.OccurrenceTime >= fromDateUtc &&
+                                                   events.OccurrenceTime < toDateUtc
                                                select events).ToList();
 
             #endregion
@@ -128,7 +130,7 @@ namespace AttendanceReport
             //List<CCFTEvent.Event> lstEvents = new List<CCFTEvent.Event>() {
             //     new CCFTEvent.Event() {
             //        EventType = 20001,
-            //        OccurrenceTime = new DateTime(2017,09,16,00,41,17,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,05,42,44,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -138,7 +140,7 @@ namespace AttendanceReport
             //    },
             //       new CCFTEvent.Event() {
             //        EventType = 20001,
-            //        OccurrenceTime = new DateTime(2017,09,16,00,41,17,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,05,42,44,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -148,7 +150,7 @@ namespace AttendanceReport
             //    },
             //    new CCFTEvent.Event() {
             //        EventType = 20003,
-            //        OccurrenceTime = new DateTime(2017,09,16,02,44,54,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,05,43,20,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -158,7 +160,7 @@ namespace AttendanceReport
             //    },
             //     new CCFTEvent.Event() {
             //        EventType = 20003,
-            //        OccurrenceTime = new DateTime(2017,09,16,02,44,54,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,05,43,20,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -168,7 +170,7 @@ namespace AttendanceReport
             //    },
             //     new CCFTEvent.Event() {
             //        EventType = 20001,
-            //        OccurrenceTime = new DateTime(2017,09,16,03,41,17,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,05,58,09,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -178,7 +180,7 @@ namespace AttendanceReport
             //    },
             //       new CCFTEvent.Event() {
             //        EventType = 20001,
-            //        OccurrenceTime = new DateTime(2017,09,16,03,41,17,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,05,58,09,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -188,7 +190,7 @@ namespace AttendanceReport
             //    },
             //    new CCFTEvent.Event() {
             //        EventType = 20003,
-            //        OccurrenceTime = new DateTime(2017,09,16,08,44,54,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,05,59,53,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -198,7 +200,27 @@ namespace AttendanceReport
             //    },
             //     new CCFTEvent.Event() {
             //        EventType = 20003,
-            //        OccurrenceTime = new DateTime(2017,09,16,08,44,54,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,05,59,53,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //    new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,06,21,22,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,06,21,22,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -208,7 +230,7 @@ namespace AttendanceReport
             //    },
             //     new CCFTEvent.Event() {
             //        EventType = 20001,
-            //        OccurrenceTime = new DateTime(2017,09,16,12,43,17,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,06,49,25,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -218,7 +240,7 @@ namespace AttendanceReport
             //    },
             //      new CCFTEvent.Event() {
             //        EventType = 20001,
-            //        OccurrenceTime = new DateTime(2017,09,16,12,43,17,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,06,49,25,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -228,7 +250,7 @@ namespace AttendanceReport
             //    },
             //       new CCFTEvent.Event() {
             //        EventType = 20003,
-            //        OccurrenceTime = new DateTime(2017,09,16,17,31,57,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,06,50,19,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -238,7 +260,7 @@ namespace AttendanceReport
             //    },
             //        new CCFTEvent.Event() {
             //        EventType = 20003,
-            //        OccurrenceTime = new DateTime(2017,09,16,17,31,57,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,06,50,19,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -248,7 +270,7 @@ namespace AttendanceReport
             //    },
             //     new CCFTEvent.Event() {
             //        EventType = 20001,
-            //        OccurrenceTime = new DateTime(2017,09,16,19,43,17,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,08,09,17,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -258,27 +280,7 @@ namespace AttendanceReport
             //    },
             //      new CCFTEvent.Event() {
             //        EventType = 20001,
-            //        OccurrenceTime = new DateTime(2017,09,16,19,43,17,DateTimeKind.Utc),
-            //        RelatedItems = new List<RelatedItem>() {
-            //            new RelatedItem() {
-            //                RelationCode = 0,
-            //                FTItemID = 14716
-            //            }
-            //        }
-            //    },
-            //       new CCFTEvent.Event() {
-            //        EventType = 20003,
-            //        OccurrenceTime = new DateTime(2017,09,16,22,31,57,DateTimeKind.Utc),
-            //        RelatedItems = new List<RelatedItem>() {
-            //            new RelatedItem() {
-            //                RelationCode = 0,
-            //                FTItemID = 14716
-            //            }
-            //        }
-            //    },
-            //        new CCFTEvent.Event() {
-            //        EventType = 20003,
-            //        OccurrenceTime = new DateTime(2017,09,16,22,31,57,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,08,09,17,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -288,7 +290,7 @@ namespace AttendanceReport
             //    },
             //     new CCFTEvent.Event() {
             //        EventType = 20001,
-            //        OccurrenceTime = new DateTime(2017,09,16,23,00,00,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,08,09,22,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -298,7 +300,27 @@ namespace AttendanceReport
             //    },
             //      new CCFTEvent.Event() {
             //        EventType = 20001,
-            //        OccurrenceTime = new DateTime(2017,09,16,23,00,00,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,08,09,22,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,36,49,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //      new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,36,49,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -308,7 +330,7 @@ namespace AttendanceReport
             //    },
             //       new CCFTEvent.Event() {
             //        EventType = 20003,
-            //        OccurrenceTime = new DateTime(2017,09,17,04,00,00,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,12,38,12,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -318,7 +340,167 @@ namespace AttendanceReport
             //    },
             //        new CCFTEvent.Event() {
             //        EventType = 20003,
-            //        OccurrenceTime = new DateTime(2017,09,17,04,00,00,DateTimeKind.Utc),
+            //        OccurrenceTime = new DateTime(2017,09,16,12,38,12,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,39,29,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //      new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,39,29,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //       new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,46,23,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //        new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,46,23,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,47,07,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //      new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,47,07,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //       new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,50,28,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //        new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,50,28,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,52,11,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //      new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,52,11,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //       new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,52,51,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //        new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,12,52,51,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //     new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,13,58,54,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //      new CCFTEvent.Event() {
+            //        EventType = 20001,
+            //        OccurrenceTime = new DateTime(2017,09,16,13,58,54,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //       new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,14,00,49,DateTimeKind.Utc),
+            //        RelatedItems = new List<RelatedItem>() {
+            //            new RelatedItem() {
+            //                RelationCode = 0,
+            //                FTItemID = 14716
+            //            }
+            //        }
+            //    },
+            //        new CCFTEvent.Event() {
+            //        EventType = 20003,
+            //        OccurrenceTime = new DateTime(2017,09,16,14,00,49,DateTimeKind.Utc),
             //        RelatedItems = new List<RelatedItem>() {
             //            new RelatedItem() {
             //                RelationCode = 0,
@@ -1877,11 +2059,18 @@ namespace AttendanceReport
 
                         int pNumber = chl.PersonalDataIntegers == null || chl.PersonalDataIntegers.Count == 0 ? 0 : Convert.ToInt32(chl.PersonalDataIntegers.ElementAt(0).Value);
                         string strPnumber = Convert.ToString(pNumber);
-                        string cnicNumber = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051).Value);
-                        string department = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043).Value);
-                        string section = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951).Value);
-                        string cadre = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952).Value);
+                        string cnicNumber = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051).Value);
+                        string department = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043).Value);
+                        string section = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951).Value);
+                        string cadre = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952).Value);
                         string company = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5059) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5059).Value);
+
+                        strPnumber = string.IsNullOrEmpty(strPnumber) ? "Unknown" : strPnumber;
+                        cnicNumber = string.IsNullOrEmpty(cnicNumber) ? "Unknown" : cnicNumber;
+                        department = string.IsNullOrEmpty(department) ? "Unknown" : department;
+                        section = string.IsNullOrEmpty(section) ? "Unknown" : section;
+                        cadre = string.IsNullOrEmpty(cadre) ? "Unknown" : cadre;
+                        company = string.IsNullOrEmpty(company) ? "Unknown" : company;
 
                         //Filter By Department
                         if (string.IsNullOrEmpty(department) || !string.IsNullOrEmpty(filterByDepartment) && department.ToLower() != filterByDepartment.ToLower())
@@ -2102,7 +2291,7 @@ namespace AttendanceReport
                         }
 
                         foreach (CCFTEvent.Event ev in outEvents)
-                        {
+                                                                {
                             DateTime outDateTime = ev.OccurrenceTime.AddHours(5);
 
                             if (date.DayOfWeek == DayOfWeek.Friday)
@@ -3130,6 +3319,7 @@ namespace AttendanceReport
                                 if (this.mData[department][section][cadre].ContainsKey(cnicNumber))
                                 {
                                     this.mData[department][section][cadre][cnicNumber].Add(reportInfo.Value);
+                                    this.mData[department][section][cadre][cnicNumber].Sort((x, y) => DateTime.Compare(x.OccurrenceTime.Date, y.OccurrenceTime.Date));
                                 }
                                 else
                                 {
@@ -3451,7 +3641,6 @@ namespace AttendanceReport
                             work.Cells[row, 1, row, 2].Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                             work.Cells[row, 1].Value = "Department:";
                             work.Cells[row, 2].Value = department.Key;
-                            work.Cells[row, 2].Style.Font.UnderLine = true;
                             work.Row(row).Height = 20;
 
                             row++;
@@ -3522,7 +3711,7 @@ namespace AttendanceReport
                                         //work.Cells[row, 5].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(247, 150, 70));
                                         work.Cells[row, 5, row, 8].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
                                         work.Cells[row, 5, row, 8].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
-                                        work.Cells[row, 5].Value = "P No.:";
+                                        work.Cells[row, 5].Value = "P No:";
                                         work.Cells[row, 6, row, 8].Merge = true;
                                         work.Cells[row, 6, row, 8].Value = Convert.ToInt32(pNumber);
                                         work.Row(row).Height = 20;
@@ -3807,7 +3996,7 @@ namespace AttendanceReport
                 SetBorderBottom(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.BLACK, 1)));
             table.AddCell(new Cell().
                     Add(new Paragraph(departmentName).
-                    SetFontSize(11F).SetUnderline()).
+                    SetFontSize(11F)).
                 SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.LEFT).
                 SetVerticalAlignment(iText.Layout.Properties.VerticalAlignment.MIDDLE).
                 SetHeight(22F).

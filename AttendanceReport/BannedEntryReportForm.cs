@@ -156,7 +156,7 @@ namespace AttendanceReport
                                 pdfDocument.AddEventHandler(PdfDocumentEvent.START_PAGE, new PdfHeaderAndFooter(doc, true, headerLeftText, headerRightText));
                                 pdfDocument.AddEventHandler(PdfDocumentEvent.END_PAGE, new PdfHeaderAndFooter(doc, false, footerLeftText, footerRightText));
 
-                                pdfDocument.SetDefaultPageSize(new iText.Kernel.Geom.PageSize(1370F, 842F));
+                                pdfDocument.SetDefaultPageSize(new iText.Kernel.Geom.PageSize(1400F, 842F));
                                 Table table = new Table((new List<float>() { 70F, 150F, 100F, 150F, 220F, 120F, 150F, 220F, 120F}).ToArray());
 
                                 table.SetWidth(1300F);

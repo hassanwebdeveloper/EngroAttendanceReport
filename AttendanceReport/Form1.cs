@@ -42,8 +42,10 @@ namespace AttendanceReport
                 Cursor.Current = Cursors.WaitCursor;
                 this.mData = null;
 
-                DateTime fromDate = this.dtpFromDate.Value.Date.ToUniversalTime();
-                DateTime toDate = this.dtpToDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime();
+                DateTime fromDate = this.dtpFromDate.Value.Date;
+                DateTime fromDateUtc = fromDate.ToUniversalTime();
+                DateTime toDate = this.dtpToDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+                DateTime toDateUtc = toDate.ToUniversalTime();
 
                 Dictionary<string, CardHolderReportInfo> cnicWiseReportInfo = new Dictionary<string, CardHolderReportInfo>();
 
@@ -64,8 +66,8 @@ namespace AttendanceReport
                 List<CCFTEvent.Event> lstEvents = (from events in EFERTDbUtility.mCCFTEvent.Events
                                                    where
                                                        events != null && (events.EventType == 20001) &&
-                                                       events.OccurrenceTime >= fromDate &&
-                                                       events.OccurrenceTime < toDate
+                                                       events.OccurrenceTime >= fromDateUtc &&
+                                                       events.OccurrenceTime < toDateUtc
                                                    select events).ToList();
 
                 //MessageBox.Show(this, "Events Found:" + lstEvents.Count);
@@ -310,12 +312,20 @@ namespace AttendanceReport
 
                             int pNumber = chl.PersonalDataIntegers == null || chl.PersonalDataIntegers.Count == 0 ? 0 : Convert.ToInt32(chl.PersonalDataIntegers.ElementAt(0).Value);
                             string strPnumber = Convert.ToString(pNumber);
-                            string cnicNumber = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051).Value);
-                            string department = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043).Value);
-                            string section = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951).Value);
-                            string cadre = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952).Value);
+                            string cnicNumber = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5051).Value);
+                            string department = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5043).Value);
+                            string section = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12951).Value);
+                            string cadre = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12952).Value);
                             string company = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5059) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 5059).Value);
-                            string crew = chl.PersonalDataStrings == null ? string.Empty : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12869) == null ? string.Empty : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12869).Value);
+                            string crew = chl.PersonalDataStrings == null ? "Unknown" : (chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12869) == null ? "Unknown" : chl.PersonalDataStrings.ToList().Find(pds => pds.PersonalDataFieldID == 12869).Value);
+
+                            strPnumber = string.IsNullOrEmpty(strPnumber) ? "Unknown" : strPnumber;
+                            cnicNumber = string.IsNullOrEmpty(cnicNumber) ? "Unknown" : cnicNumber;
+                            department = string.IsNullOrEmpty(department) ? "Unknown" : department;
+                            section = string.IsNullOrEmpty(section) ? "Unknown" : section;
+                            cadre = string.IsNullOrEmpty(cadre) ? "Unknown" : cadre;
+                            company = string.IsNullOrEmpty(company) ? "Unknown" : company;
+                            crew = string.IsNullOrEmpty(crew) ? "Unknown" : crew;
 
                             //Filter By Department
                             if (string.IsNullOrEmpty(department) || !string.IsNullOrEmpty(filterByDepartment) && department.ToLower() != filterByDepartment.ToLower())
@@ -391,18 +401,20 @@ namespace AttendanceReport
 
                             foreach (CCFTEvent.Event chlEvent in events)
                             {
+                                DateTime eventDateTime = chlEvent.OccurrenceTime.AddHours(5);
+
                                 if (chlEvent.EventType == 20001)// In Events
                                 {
                                     if (cnicWiseReportInfo.ContainsKey(cnicNumber + "^" + date.ToString()))
                                     {
                                         CardHolderReportInfo reportInfo = cnicWiseReportInfo[cnicNumber + "^" + date.ToString()];
 
-                                        if (chlEvent.OccurrenceTime.TimeOfDay < reportInfo.OccurrenceTime.TimeOfDay)
+                                        if (eventDateTime.TimeOfDay < reportInfo.OccurrenceTime.TimeOfDay)
                                         {
-                                            if (TimeSpan.Compare(chlEvent.OccurrenceTime.TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(chlEvent.OccurrenceTime.TimeOfDay, thEndTime) <= 0)
+                                            if (TimeSpan.Compare(eventDateTime.TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(eventDateTime.TimeOfDay, thEndTime) <= 0)
                                             {
                                                 reportInfo.CardNumber = chl.LastName;
-                                                reportInfo.OccurrenceTime = chlEvent.OccurrenceTime;
+                                                reportInfo.OccurrenceTime = eventDateTime;
                                             }
                                             else
                                             {
@@ -414,12 +426,12 @@ namespace AttendanceReport
                                     }
                                     else
                                     {
-                                        if (TimeSpan.Compare(chlEvent.OccurrenceTime.TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(chlEvent.OccurrenceTime.TimeOfDay, thEndTime) <= 0)
+                                        if (TimeSpan.Compare(eventDateTime.TimeOfDay, thStartTime) > 0 && TimeSpan.Compare(eventDateTime.TimeOfDay, thEndTime) <= 0)
                                         {
                                             cnicWiseReportInfo.Add(cnicNumber + "^" + date.ToString(), new CardHolderReportInfo()
                                             {
                                                 CardNumber = chl.LastName,
-                                                OccurrenceTime = chlEvent.OccurrenceTime,
+                                                OccurrenceTime = eventDateTime,
                                                 FirstName = chl.FirstName,
                                                 PNumber = strPnumber,
                                                 CNICNumber = cnicNumber,
@@ -461,6 +473,7 @@ namespace AttendanceReport
                                 if (this.mData[department][section].ContainsKey(cadre))
                                 {
                                     this.mData[department][section][cadre].Add(report);
+                                    this.mData[department][section][cadre].Sort((x, y) => DateTime.Compare(x.OccurrenceTime.Date, y.OccurrenceTime.Date));
                                 }
                                 else
                                 {

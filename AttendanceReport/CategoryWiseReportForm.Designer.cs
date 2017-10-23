@@ -30,6 +30,8 @@
         {
             this.btnGenerate = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.cbxCompany = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.tbxCnic = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.cbxCategory = new System.Windows.Forms.ComboBox();
@@ -41,8 +43,6 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.dtpFromDate = new System.Windows.Forms.DateTimePicker();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.cbxCompany = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.groupBox4.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -75,6 +75,24 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Filter by";
             // 
+            // cbxCompany
+            // 
+            this.cbxCompany.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxCompany.FormattingEnabled = true;
+            this.cbxCompany.Location = new System.Drawing.Point(79, 46);
+            this.cbxCompany.Name = "cbxCompany";
+            this.cbxCompany.Size = new System.Drawing.Size(188, 21);
+            this.cbxCompany.TabIndex = 23;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 49);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(51, 13);
+            this.label1.TabIndex = 22;
+            this.label1.Text = "Company";
+            // 
             // tbxCnic
             // 
             this.tbxCnic.Location = new System.Drawing.Point(79, 99);
@@ -96,10 +114,11 @@
             this.cbxCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbxCategory.FormattingEnabled = true;
             this.cbxCategory.Items.AddRange(new object[] {
+            "",
             "Casual 3P",
-            "Visitor",
-            "Pallaydar",
             "Contractor",
+            "Pallaydar",
+            "Visitor",
             "WO Staff"});
             this.cbxCategory.Location = new System.Drawing.Point(79, 19);
             this.cbxCategory.Name = "cbxCategory";
@@ -173,24 +192,6 @@
             this.saveFileDialog1.Filter = "PDF|*.pdf|Excel|*.xlsx";
             this.saveFileDialog1.Title = "Select Path To Save Report";
             this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog1_FileOk);
-            // 
-            // cbxCompany
-            // 
-            this.cbxCompany.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbxCompany.FormattingEnabled = true;
-            this.cbxCompany.Location = new System.Drawing.Point(79, 46);
-            this.cbxCompany.Name = "cbxCompany";
-            this.cbxCompany.Size = new System.Drawing.Size(188, 21);
-            this.cbxCompany.TabIndex = 23;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 49);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(51, 13);
-            this.label1.TabIndex = 22;
-            this.label1.Text = "Company";
             // 
             // CategoryWiseReportForm
             // 

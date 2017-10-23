@@ -289,7 +289,7 @@ namespace AttendanceReport
                                 pdfDocument.AddEventHandler(PdfDocumentEvent.START_PAGE, new PdfHeaderAndFooter(doc, true, headerLeftText, headerRightText));
                                 pdfDocument.AddEventHandler(PdfDocumentEvent.END_PAGE, new PdfHeaderAndFooter(doc, false, footerLeftText, footerRightText));
 
-                                pdfDocument.SetDefaultPageSize(new iText.Kernel.Geom.PageSize(1000F, 842F));
+                                pdfDocument.SetDefaultPageSize(new iText.Kernel.Geom.PageSize(1080F, 842F));
                                 Table table = new Table((new List<float>() { 90F, 140F, 250F, 120F, 240F, 120F }).ToArray());
 
                                 table.SetWidth(980F);
@@ -596,7 +596,7 @@ namespace AttendanceReport
 
         private void AddMainHeading(Table table, string heading)
         {
-            Cell headingCell = new Cell(2, 5);
+            Cell headingCell = new Cell(2, 3);
             headingCell.SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER);
             headingCell.SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3));
             headingCell.Add(new Paragraph(heading).SetFontSize(22F).SetBackgroundColor(new DeviceRgb(252, 213, 180))
@@ -607,7 +607,7 @@ namespace AttendanceReport
             table.AddCell(headingCell);
             table.AddCell(new Cell().Add(new Paragraph(string.Empty).SetFontSize(22F)).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
             //table.AddCell(new Cell().Add(new Paragraph(string.Empty).SetFontSize(22F)).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
-            table.AddCell(new Cell().Add(img).SetMarginLeft(80F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
+            table.AddCell(new Cell().Add(img).SetMarginLeft(160F).SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3)));
         }
 
         private void AddNewEmptyRow(Table table, bool removeBottomBorder = true)

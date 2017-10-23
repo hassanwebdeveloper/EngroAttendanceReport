@@ -21,7 +21,7 @@ namespace AttendanceReport
 
         private void UpdateLayout()
         {
-            if (LoginForm.mLoggedInUser.UserName == "user")
+            if (LoginForm.mLoggedInUser.UserName == "user" || LoginForm.mLoggedInUser.UserName == "Guest1" || LoginForm.mLoggedInUser.UserName == "Guest2")
             {
                 this.btnLateArrivalReport.Visible = false;
                 this.btnAttendance.Visible = false;

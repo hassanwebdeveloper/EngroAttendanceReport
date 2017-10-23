@@ -28,7 +28,19 @@ namespace AttendanceReport
             new AppUser()
             {
                 UserName = "user",
-                Password = "efert123#@!",
+                Password = "Engro786",
+                IsAdmin = true
+            },
+            new AppUser()
+            {
+                UserName = "Guest1",
+                Password = "Engro786",
+                IsAdmin = true
+            },
+            new AppUser()
+            {
+                UserName = "Guest2",
+                Password = "Engro786",
                 IsAdmin = true
             }
         };
