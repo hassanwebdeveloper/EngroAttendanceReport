@@ -202,11 +202,11 @@ namespace AttendanceReport
 
             if (extension == ".pdf")
             {
-                this.SaveAsPdf(this.mLstCardHolders, "Contractor Wise Report");
+                this.SaveAsPdf(this.mLstCardHolders, this.mCardNotReturned ? "Company Wise Not Returned Report" : "Company Wise Report");
             }
             else if (extension == ".xlsx")
             {
-                this.SaveAsExcel(this.mLstCardHolders, "Contractor Wise Report", "Contractor Wise Report");
+                this.SaveAsExcel(this.mLstCardHolders, this.mCardNotReturned ? "Not Returned Report" : "Company Wise Report", "Company Wise Report");
             }
         }
 
@@ -541,7 +541,7 @@ namespace AttendanceReport
 
         private void AddMainHeading(Table table, string heading)
         {
-            Cell headingCell = new Cell(2, 5);
+            Cell headingCell = new Cell(2, 3);
             headingCell.SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER);
             headingCell.SetBorder(new iText.Layout.Borders.SolidBorder(iText.Kernel.Colors.Color.WHITE, 3));
             headingCell.Add(new Paragraph(heading).SetFontSize(22F).SetBackgroundColor(new DeviceRgb(252, 213, 180))

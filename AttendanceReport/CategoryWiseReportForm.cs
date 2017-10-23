@@ -257,11 +257,11 @@ namespace AttendanceReport
 
             if (extension == ".pdf")
             {
-                this.SaveAsPdf(this.mLstCardHolders, "Category Wise Report");
+                this.SaveAsPdf(this.mLstCardHolders, this.mCardNotReturned ? "Individual Wise Not Returned Report" : "Individual Wise Report");
             }
             else if (extension == ".xlsx")
             {
-                this.SaveAsExcel(this.mLstCardHolders, "Category Wise Report", "Category Wise Report");
+                this.SaveAsExcel(this.mLstCardHolders, this.mCardNotReturned ? "Not Returned Report" : "Individual Wise Report", "Individual Wise Report");
             }
         }
 

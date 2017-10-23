@@ -101,7 +101,7 @@
             this.btnCategoryWise.Name = "btnCategoryWise";
             this.btnCategoryWise.Size = new System.Drawing.Size(137, 50);
             this.btnCategoryWise.TabIndex = 15;
-            this.btnCategoryWise.Text = "Category Wise";
+            this.btnCategoryWise.Text = "Individual Wise";
             this.btnCategoryWise.UseVisualStyleBackColor = true;
             this.btnCategoryWise.Click += new System.EventHandler(this.btnCategoryWise_Click);
             // 
